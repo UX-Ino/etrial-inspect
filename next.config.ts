@@ -19,8 +19,7 @@ const nextConfig: NextConfig = {
     "seo-analyzer",
     "@capyseo/core",
     "@houtini/geo-analyzer",
-    "llms-txt-generator",
-    "@notionhq/client"
+    "llms-txt-generator"
   ],
 };
 

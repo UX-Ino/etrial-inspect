@@ -23,8 +23,12 @@ export async function GET() {
 
     const history = await notionService.getAuditHistory();
     return NextResponse.json(history);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching history:', error);
-    return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to fetch history',
+      details: error.message,
+      stack: error.stack
+    }, { status: 500 });
   }
 }
