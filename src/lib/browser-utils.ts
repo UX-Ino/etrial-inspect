@@ -10,23 +10,31 @@ import { LaunchOptions } from 'playwright-core';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promise<LaunchOptions> => {
-  const isVercel = process.env.VERCEL === '1';
+  const isVercel = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  console.log(`[Browser Launch] Environment Check: isVercel=${isVercel}, NODE_ENV=${process.env.NODE_ENV}`);
 
   if (isVercel) {
     try {
+      console.log('[Browser Launch] Attempting to load @sparticuz/chromium...');
       const chromium = await import('@sparticuz/chromium');
+
+      const executablePath = await chromium.default.executablePath();
+      console.log(`[Browser Launch] Executable Path: ${executablePath}`);
+
       return {
         args: chromium.default.args,
-        executablePath: await chromium.default.executablePath(),
+        executablePath: executablePath,
         headless: true,
       };
     } catch (e) {
-      console.error('Failed to load @sparticuz/chromium:', e);
+      console.error('[Browser Launch] Failed to load @sparticuz/chromium:', e);
       throw e;
     }
   }
 
   // Local: Try system Chrome
+  console.log('[Browser Launch] Using System Chrome (Local Development)');
   return {
     channel: 'chrome',
     headless: isHeadless,
