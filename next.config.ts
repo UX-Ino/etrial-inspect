@@ -22,12 +22,12 @@ const nextConfig: NextConfig = {
     "@sparticuz/chromium",
     "llms-txt-generator"
   ],
-  experimental: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
-    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
   } as any,
+  experimental: {
+  },
 };
 
 export default nextConfig;
