@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
     "@sparticuz/chromium",
     "llms-txt-generator"
   ],
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+    },
+  },
 };
 
 export default nextConfig;

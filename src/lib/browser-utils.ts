@@ -19,6 +19,12 @@ export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promi
       console.log('[Browser Launch] Attempting to load @sparticuz/chromium...');
       const chromium = await import('@sparticuz/chromium');
 
+      // Optional: Disable WebGL to reduce binary size requirement
+      chromium.default.setGraphicsMode = false;
+
+      // Ensure proper headless mode is set before asking for path
+      // Note: Some versions require this setup to resolve the correct binary path
+
       const executablePath = await chromium.default.executablePath();
       console.log(`[Browser Launch] Executable Path: ${executablePath}`);
 
