@@ -17,7 +17,11 @@ export class WebAuditService implements IPlatformAuditService {
 
     if (!response.ok) {
       const err = await response.json();
-      throw new Error(err.error || 'Audit failed');
+      console.error('SERVER ERROR DETAILS:', err); // Log for debugging
+      // Throw error with detailed message if available
+      const errorMessage = err.details || err.error || 'Audit failed';
+      // Append stack for developer visibility in console if needed, or just rely on console.error above
+      throw new Error(errorMessage + (err.stack ? `\nStack: ${err.stack}` : ''));
     }
 
     const data = await response.json();
