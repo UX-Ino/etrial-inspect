@@ -311,7 +311,7 @@ export class NotionService {
       */
       const response = await this.notion.request({
         path: `databases/${formattedDbId}/query`,
-        method: 'POST',
+        method: 'post',
         body: {
           filter: {
             property: 'Deleted',
