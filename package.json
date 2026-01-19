@@ -9,9 +9,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "playwright install chromium"
   },
   "dependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@capyseo/core": "^0.1.2",
     "@houtini/geo-analyzer": "^2.1.0",
     "@notionhq/client": "^2.2.16",
@@ -20,13 +22,13 @@
     "llms-txt-generator": "^0.0.3",
     "marked": "^17.0.1",
     "next": "16.1.1",
+    "playwright": "^1.57.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.6.0",
     "seo-analyzer": "^3.2.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -34,7 +36,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "jest": "^30.2.0",
-    "playwright": "^1.57.0",
     "sass": "^1.97.2",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
