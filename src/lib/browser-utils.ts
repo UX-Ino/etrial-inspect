@@ -8,20 +8,42 @@ import { LaunchOptions } from 'playwright';
  * @param isHeadless Whether to run in headless mode.
  * @returns Playwright LaunchOptions
  */
-export const getBrowserLaunchOptions = (isHeadless: boolean = true): LaunchOptions => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promise<LaunchOptions> => {
   const isDev = process.env.NODE_ENV === 'development';
   const isVercel = process.env.VERCEL === '1';
 
   const options: LaunchOptions = {
     headless: isHeadless,
+    args: isVercel ? [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu'
+    ] : undefined,
   };
 
-  // If on Vercel, do NOT force 'chrome' channel. Let Playwright use its bundled version (if configured)
-  // or rely on AWS Lambda layers if using chrome-aws-lambda (though simple playwright usage might fail on standard Vercel functions).
-  // Standard Vercel Serverless Functions have size limits that Playwright often exceeds.
-  // However, removing 'channel: chrome' is the first step to standard behavior.
-  if (!isVercel) {
-    // Only force system Chrome in local/non-serverless environments
+  if (isVercel) {
+    try {
+      const chromium = await import('@sparticuz/chromium');
+      // @sparticuz/chromium requires a specific version of non-headless chromium binary? 
+      // Actually it downloads minified chromium.
+      // We need to set the executable path.
+
+      // Note: sparticuz/chromium is mainly for Puppeteer, but Playwright can use it if we launch via launch({ executablePath })
+      // However, Playwright is picky. 
+      // Let's try to set executablePath.
+
+      options.executablePath = await chromium.default.executablePath();
+    } catch (e) {
+      console.error('Failed to load @sparticuz/chromium:', e);
+    }
+  } else {
+    // Local: Try system Chrome
     options.channel = 'chrome';
   }
 
