@@ -10,32 +10,28 @@ import { LaunchOptions } from 'playwright-core';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promise<LaunchOptions> => {
-  const isDev = process.env.NODE_ENV === 'development';
   const isVercel = process.env.VERCEL === '1';
-
-  // Vercel Serverless Function (AWS Lambda) Environment Check
 
   if (isVercel) {
     try {
       const chromium = await import('@sparticuz/chromium');
-      // @sparticuz/chromium requires a specific version of non-headless chromium binary? 
-      // Actually it downloads minified chromium.
-      // We need to set the executable path.
-
-      // Note: sparticuz/chromium is mainly for Puppeteer, but Playwright can use it if we launch via launch({ executablePath })
-      // However, Playwright is picky. 
-      // Let's try to set executablePath.
-
-      options.executablePath = await chromium.default.executablePath();
+      return {
+        args: chromium.default.args,
+        defaultViewport: chromium.default.defaultViewport,
+        executablePath: await chromium.default.executablePath(),
+        headless: chromium.default.headless,
+      };
     } catch (e) {
       console.error('Failed to load @sparticuz/chromium:', e);
+      throw e;
     }
-  } else {
-    // Local: Try system Chrome
-    options.channel = 'chrome';
   }
 
-  return options;
+  // Local: Try system Chrome
+  return {
+    channel: 'chrome',
+    headless: isHeadless,
+  };
 };
 
 /**
