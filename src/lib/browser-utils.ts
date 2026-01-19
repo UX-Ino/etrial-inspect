@@ -18,7 +18,7 @@ export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promi
       return {
         args: chromium.default.args,
         executablePath: await chromium.default.executablePath(),
-        headless: !!chromium.default.headless,
+        headless: true,
       };
     } catch (e) {
       console.error('Failed to load @sparticuz/chromium:', e);
