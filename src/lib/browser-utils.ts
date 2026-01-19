@@ -10,13 +10,20 @@ import { LaunchOptions } from 'playwright';
  */
 export const getBrowserLaunchOptions = (isHeadless: boolean = true): LaunchOptions => {
   const isDev = process.env.NODE_ENV === 'development';
+  const isVercel = process.env.VERCEL === '1';
 
   const options: LaunchOptions = {
     headless: isHeadless,
   };
 
-  // Always use system-installed Chrome to avoid 'Executable doesn't exist' for bundled Chromium
-  options.channel = 'chrome';
+  // If on Vercel, do NOT force 'chrome' channel. Let Playwright use its bundled version (if configured)
+  // or rely on AWS Lambda layers if using chrome-aws-lambda (though simple playwright usage might fail on standard Vercel functions).
+  // Standard Vercel Serverless Functions have size limits that Playwright often exceeds.
+  // However, removing 'channel: chrome' is the first step to standard behavior.
+  if (!isVercel) {
+    // Only force system Chrome in local/non-serverless environments
+    options.channel = 'chrome';
+  }
 
   return options;
 };
