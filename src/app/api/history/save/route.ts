@@ -23,8 +23,21 @@ export async function POST(request: Request) {
     const pageId = await notionService.saveAuditResult(result);
 
     // 2. 리포트 링크 생성 (페이지 ID 포함 - Clean URL)
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
-    const reportUrl = `${origin}/report/${pageId}`;
+    // Vercel 배포 시 'origin' 헤더가 없거나 내부 네트워크 아이피가 될 수 있으므로
+    // VERCEL_URL 환경 변수나 x-forwarded-host 헤더도 체크합니다.
+    let baseOrigin = request.headers.get('origin') || 'http://localhost:3000';
+
+    // Vercel 환경에서 origin이 localhost로 잡히는 경우 방지
+    const host = request.headers.get('host');
+    const proto = request.headers.get('x-forwarded-proto') || 'https';
+
+    if (process.env.VERCEL_URL) {
+      baseOrigin = `https://${process.env.VERCEL_URL}`;
+    } else if (host && !host.includes('localhost')) {
+      baseOrigin = `${proto}://${host}`;
+    }
+
+    const reportUrl = `${baseOrigin}/report/${pageId}`;
 
     // 3. 페이지에 리포트 링크 업데이트
     await notionService.updatePageProperty(pageId, {
