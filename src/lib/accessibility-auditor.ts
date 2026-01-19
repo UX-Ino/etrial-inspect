@@ -39,7 +39,7 @@ export class AccessibilityAuditor {
   }
 
   async init(): Promise<void> {
-    const launchOptions = getBrowserLaunchOptions(this.options.headless !== undefined ? this.options.headless : true);
+    const launchOptions = await getBrowserLaunchOptions(this.options.headless !== undefined ? this.options.headless : true);
     this.browser = await chromium.launch(launchOptions);
     this.context = await this.browser.newContext({
       viewport: { width: 1920, height: 1080 },
