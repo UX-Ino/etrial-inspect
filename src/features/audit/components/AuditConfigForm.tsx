@@ -100,7 +100,7 @@ export const AuditConfigForm = ({ config, setConfig, onStart, onGitHubStart, isP
         </div>
       </div>
 
-      </div>
+
 
       <Button
         variant="primary"
@@ -113,19 +113,19 @@ export const AuditConfigForm = ({ config, setConfig, onStart, onGitHubStart, isP
       </Button>
 
       {
-    onGitHubStart && (
-      <Button
-        variant="secondary"
-        fullWidth
-        onClick={onGitHubStart}
-        disabled={isProcessing}
-        style={{ marginTop: '0.5rem', backgroundColor: '#24292e', color: 'white' }}
-      >
-        <span style={{ marginRight: '0.5rem' }}>⚡️</span>
-        대규모 진단 (GitHub Actions)
-      </Button>
-    )
-  }
+        onGitHubStart && (
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={onGitHubStart}
+            disabled={isProcessing}
+            style={{ marginTop: '0.5rem', backgroundColor: '#24292e', color: 'white' }}
+          >
+            <span style={{ marginRight: '0.5rem' }}>⚡️</span>
+            대규모 진단 (GitHub Actions)
+          </Button>
+        )
+      }
     </Card >
   );
 };
