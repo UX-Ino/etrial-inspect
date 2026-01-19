@@ -13,19 +13,7 @@ export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promi
   const isDev = process.env.NODE_ENV === 'development';
   const isVercel = process.env.VERCEL === '1';
 
-  const options: LaunchOptions = {
-    headless: isHeadless,
-    args: isVercel ? [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu'
-    ] : undefined,
-  };
+  // Vercel Serverless Function (AWS Lambda) Environment Check
 
   if (isVercel) {
     try {
