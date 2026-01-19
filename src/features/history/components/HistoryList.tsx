@@ -15,7 +15,7 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
   const fetchHistory = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/history/list');
+      const res = await fetch('/api/history/list', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setHistory(data);
