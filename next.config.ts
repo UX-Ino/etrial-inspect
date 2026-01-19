@@ -26,6 +26,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
   } as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  outputFileTracingExcludes: {
+    '*': [
+      './public/screenshots/**/*',
+      './public/screenshots',
+    ],
+  } as any,
   experimental: {
   },
 };
