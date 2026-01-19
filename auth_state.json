@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "NEXT_LOCALE",
+      "value": "ko",
+      "domain": "www.thunderjob.com",
+      "path": "/",
+      "expires": 1798686865.638064,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "accessToken",
+      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZUNvZGUiOiJVVDAwMyIsImNvbXBhbnlJZCI6MCwicGhvbmVOdW1iZXIiOiIwMTAxMjM0MTIzNCIsImlzcyI6Imh0dHBzOi8vYXBpLnRodW5kZXJqb2IuY29tIiwibmFtZSI6ImhvbmdnaWxkb25nIiwibmlja25hbWUiOiJFdGhvbmdnaWwiLCJpZCI6IjU1OThiMDc4LTA0NTAtNGQyMy1hYjVkLTlmMTA2MDE1NmZlZSIsImV4cCI6MTc2NzIzNzI4NSwiZW1haWwiOiJlLnRzdHVkZW50OTBAZ21haWwuY29tIiwiaXNSZXN1bWVBY3RpdmUiOmZhbHNlfQ.hI9nu2EVdJV5bx6yqxAF94wqpbNIr2jctFvsppPDyJI",
+      "domain": "www.thunderjob.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "refreshToken",
+      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZUNvZGUiOiJVVDAwMyIsImNvbXBhbnlJZCI6MCwicGhvbmVOdW1iZXIiOiIwMTAxMjM0MTIzNCIsImlzcyI6Imh0dHBzOi8vYXBpLnRodW5kZXJqb2IuY29tIiwibmFtZSI6ImhvbmdnaWxkb25nIiwibmlja25hbWUiOiJFdGhvbmdnaWwiLCJpZCI6IjU1OThiMDc4LTA0NTAtNGQyMy1hYjVkLTlmMTA2MDE1NmZlZSIsImV4cCI6MTc2OTc0Mjg4NSwiZW1haWwiOiJlLnRzdHVkZW50OTBAZ21haWwuY29tIiwiaXNSZXN1bWVBY3RpdmUiOmZhbHNlfQ.JnxJfo1bdyG-3QV_PjfPuTe1NSbyQc8RjlFcl825F-g",
+      "domain": "www.thunderjob.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.thunderjob.com",
+      "localStorage": [
+        {
+          "name": "auth-storage",
+          "value": "{\"state\":{\"userInfo\":{\"userTypeCode\":\"UT003\",\"companyId\":0,\"phoneNumber\":\"01012341234\",\"iss\":\"https://api.thunderjob.com\",\"name\":\"honggildong\",\"nickname\":\"Ethonggil\",\"id\":\"5598b078-0450-4d23-ab5d-9f1060156fee\",\"exp\":1767237285,\"email\":\"e.tstudent90@gmail.com\",\"isResumeActive\":false},\"isLoggedIn\":true,\"userType\":\"intern\"},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

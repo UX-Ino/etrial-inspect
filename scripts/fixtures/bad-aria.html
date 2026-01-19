@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>ARIA Test</title>
+</head>
+<body>
+    <!-- Violation: Missing aria-selected, aria-controls -->
+    <div role="tab">Tab 1</div>
+
+    <!-- Violation: Missing aria-checked -->
+    <div role="checkbox">Checkbox</div>
+
+    <!-- Violation: Missing aria-checked -->
+    <div role="radio">Radio</div>
+
+    <!-- Violation: Missing values -->
+    <div role="slider">Slider</div>
+
+    <!-- Violation: Invalid pressed value -->
+    <button aria-pressed="invalid">Toggle</button>
+</body>
+</html>

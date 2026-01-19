@@ -1,0 +1,158 @@
+.container {
+  margin-top: 1rem;
+}
+
+.ai-section {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.card {
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+.flex-row {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.score-text {
+  margin-left: auto;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.suggestion-box {
+  margin-top: 1.25rem;
+  background: #fff;
+  border: 1px solid #fee2e2;
+  padding: 1.25rem;
+  border-radius: 8px;
+}
+
+.suggestion-title {
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.suggestion-pre {
+  background: #f8fafc;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #475569;
+  overflow: auto;
+  max-height: 200px;
+  font-family: monospace;
+}
+
+.validator-badge {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+.validator-badge span {
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.final-score {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  text-align: center;
+  background: linear-gradient(90deg, #f8fafc 0%, #fff1f2 100%);
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #be123c;
+}
+
+.ai-tool-section {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.tool-title {
+  margin: 0 0 0.75rem 0;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.tool-desc {
+  margin: 0 0 1.5rem 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ai-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: all 0.2s;
+}
+
+.ai-button:hover {
+  background: #1d4ed8;
+}
+
+.copy-success {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.95rem;
+}

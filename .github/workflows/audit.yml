@@ -1,0 +1,48 @@
+name: Accessibility Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      targetUrl:
+        description: 'Target URL to audit'
+        required: true
+        type: string
+      userEmail:
+        description: 'User Email for notification (optional)'
+        required: false
+        type: string
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Audit
+        run: npx ts-node -r tsconfig-paths/register scripts/run-audit.ts
+        env:
+          TARGET_URL: ${{ github.event.inputs.targetUrl }}
+          USER_EMAIL: ${{ github.event.inputs.userEmail }}
+          # Add other necessary env vars here (e.g. storage keys)
+
+      - name: Upload Audit Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: audit-results/
+          retention-days: 7

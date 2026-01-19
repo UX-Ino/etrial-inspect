@@ -1,0 +1,68 @@
+import { AuditConfig, AuditResult } from '@/types';
+
+export interface IPlatformAuditService {
+  startAudit(config: AuditConfig, onProgress?: (data: unknown) => void): Promise<AuditResult>;
+  exportExcel(result: AuditResult): Promise<void>;
+}
+
+// WebAuditService: Simplified for Web-only architecture
+export class WebAuditService implements IPlatformAuditService {
+  async startAudit(config: AuditConfig, onProgress?: (data: unknown) => void): Promise<AuditResult> {
+    // Web implementation: simple fetch
+    const response = await fetch('/api/audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Audit failed');
+    }
+
+    const data = await response.json();
+
+    // Handling async/pending response
+    if (data.message && !data.violations) {
+      // Return a dummy result structure for now
+      return {
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        totalPages: 0,
+        totalViolations: 0,
+        pages: [],
+        violations: [],
+        summary: {
+          byPrinciple: {},
+          byImpact: { critical: 0, serious: 0, moderate: 0, minor: 0 },
+          byKwcagItem: {}
+        },
+        // Ideally we would notify user of async start
+      } as AuditResult;
+    }
+
+    return data;
+  }
+
+  async exportExcel(result: AuditResult): Promise<void> {
+    const response = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    });
+
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kwcag-audit-${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+}
