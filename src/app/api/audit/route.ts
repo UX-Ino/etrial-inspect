@@ -2,23 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { triggerAudit } from '@/services/AuditService';
 import { AuditConfig } from '@/types';
 
+// Set max duration for Vercel Serverless Function (Start with 60s, max 300s for Pro)
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const config: AuditConfig = await request.json();
 
-    // 🔧 Run audit logic (Environment-agnostic)
     console.log('🚀 Starting audit execution...');
 
-    // Dynamic import to avoid bundling Playwright in production
-    const { runAudit } = await import('@/services/AuditExecutor');
+    // Dynamic import to avoid bundling excessive dependencies on cold start
+    let runAudit;
+    try {
+      const module = await import('@/services/AuditExecutor');
+      runAudit = module.runAudit;
+    } catch (e) {
+      console.error('Failed to import AuditExecutor:', e);
+      throw new Error('Audit Engine module failed to load.');
+    }
+
     const result = await runAudit(config);
 
     return NextResponse.json(result);
 
-  } catch (error) {
-    console.error('Audit trigger error:', error);
+  } catch (error: any) {
+    console.error('Audit execution error:', error);
     return NextResponse.json(
-      { error: `진단 요청 중 오류가 발생했습니다: ${error instanceof Error ? error.message : error}` },
+      {
+        error: `진단 실행 중 오류가 발생했습니다.`,
+        details: error.message,
+        stack: error.stack
+      },
       { status: 500 }
     );
   }
