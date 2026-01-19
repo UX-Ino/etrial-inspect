@@ -328,6 +328,11 @@ export class NotionService {
         },
       }) as any;
 
+      if (!response || !response.results) {
+        console.error('Invalid Notion response:', response);
+        return [];
+      }
+
       return response.results.map((page: any) => {
         const props = page.properties;
         return {

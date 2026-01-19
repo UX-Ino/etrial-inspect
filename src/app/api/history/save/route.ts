@@ -10,8 +10,9 @@ export async function POST(request: Request) {
     const databaseId = process.env.NOTION_DATABASE_ID;
 
     if (!apiKey || !databaseId) {
+      console.error(`Missing Env Vars - API Key: ${!!apiKey}, DB ID: ${!!databaseId}`);
       return NextResponse.json(
-        { error: 'Notion API Key or Database ID not configured.' },
+        { error: 'Notion API Key or Database ID not configured (Check Vercel Env Vars).' },
         { status: 500 }
       );
     }

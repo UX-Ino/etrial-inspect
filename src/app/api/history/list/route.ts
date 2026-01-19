@@ -7,14 +7,18 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   await Utils.simulatedDelay(300);
 
-  if (!process.env.NOTION_API_KEY || !process.env.NOTION_DATABASE_ID) {
-    return NextResponse.json({ error: 'Notion configuration missing' }, { status: 500 });
+  const apiKey = process.env.NOTION_API_KEY;
+  const dbId = process.env.NOTION_DATABASE_ID;
+
+  if (!apiKey || !dbId) {
+    console.error(`Missing Env Vars - API Key: ${!!apiKey}, DB ID: ${!!dbId}`);
+    return NextResponse.json({ error: 'Notion configuration missing (Check Vercel Env Vars)' }, { status: 500 });
   }
 
   try {
     const notionService = new NotionService(
-      process.env.NOTION_API_KEY,
-      process.env.NOTION_DATABASE_ID
+      apiKey,
+      dbId
     );
 
     const history = await notionService.getAuditHistory();
