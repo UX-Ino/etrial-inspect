@@ -1,4 +1,4 @@
-import { LaunchOptions } from 'playwright';
+import { LaunchOptions } from 'playwright-core';
 
 /**
  * Returns platform-specific Playwright launch options.

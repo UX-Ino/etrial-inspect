@@ -1,4 +1,4 @@
-import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { chromium, Browser, BrowserContext, Page } from 'playwright-core';
 import { PageInfo } from '@/types';
 import { getBrowserLaunchOptions } from './browser-utils';
 

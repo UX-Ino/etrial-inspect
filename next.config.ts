@@ -14,11 +14,12 @@ const nextConfig: NextConfig = {
 
   serverExternalPackages: [
     "@axe-core/playwright",
-    "playwright",
+    "playwright-core",
     "axe-core",
     "seo-analyzer",
     "@capyseo/core",
     "@houtini/geo-analyzer",
+    "@sparticuz/chromium",
     "llms-txt-generator"
   ],
 };
