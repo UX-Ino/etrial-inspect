@@ -11,11 +11,7 @@ const nextConfig: NextConfig = {
   sassOptions: {
     includePaths: [path.join(process.cwd(), 'styles')],
   },
-  experimental: {
-    turbo: {
-      root: process.cwd(),
-    }
-  },
+
   serverExternalPackages: [
     "@axe-core/playwright",
     "playwright",
