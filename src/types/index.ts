@@ -23,6 +23,15 @@ export interface PageInfo {
   depth4: string;
 }
 
+export interface HistoryItem {
+  id: string;
+  url: string;
+  date: string;
+  score: number;
+  violationCount: number;
+  reportLink: string | null;
+}
+
 export interface BoundingBox {
   x: number;
   y: number;

@@ -6,6 +6,8 @@ import styles from './page.module.css';
 import { useAudit } from '@/features/audit/hooks/useAudit';
 import { AuditConfigForm } from '@/features/audit/components/AuditConfigForm';
 import { AuditTerminal } from '@/features/audit/components/AuditTerminal';
+import { HistoryList } from '@/features/history/components/HistoryList';
+import { useState } from 'react';
 
 export default function Home() {
   const {
@@ -15,8 +17,35 @@ export default function Home() {
     results,
     logs,
     startAudit,
-    exportExcel
+    exportExcel,
+    saveToNotion, // keep original usage if needed, but we override handler
+    auditResult
   } = useAudit();
+
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+
+  const handleSaveToNotion = async () => {
+    if (!auditResult) return;
+
+    try {
+      const response = await fetch('/api/history/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(auditResult),
+      });
+
+      if (!response.ok) throw new Error('Failed to save to Notion');
+
+      const { reportUrl } = await response.json();
+      alert(`Notion에 저장되었습니다!\n${reportUrl}`);
+
+      // Refresh History List
+      setHistoryRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('Failed to save:', error);
+      alert('저장 실패: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
 
   const isProcessing = progress.status === 'crawling' || progress.status === 'auditing';
 
@@ -38,6 +67,8 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.grid}>
+
+
           {/* 설정 카드 */}
           <section>
             <AuditConfigForm
@@ -54,8 +85,14 @@ export default function Home() {
               logs={logs}
               progress={progress}
               onExport={exportExcel}
+              onSaveToNotion={() => { if (auditResult) handleSaveToNotion(); }}
               resultSummary={results}
             />
+          </section>
+
+          {/* 진단 이력 리스트 */}
+          <section className={styles['full-width']}>
+            <HistoryList refreshTrigger={historyRefreshTrigger} />
           </section>
         </div>
       </main>

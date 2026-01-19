@@ -150,6 +150,10 @@
   }
 }
 
+.full-width {
+  grid-column: 1 / -1;
+}
+
 .card-title {
   font-size: 1.25rem;
   font-weight: 600;

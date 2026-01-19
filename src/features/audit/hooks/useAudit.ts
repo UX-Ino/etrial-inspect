@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { AuditConfig } from '@/types';
+import { AuditConfig, AuditResult } from '@/types';
 
 export interface ProgressState {
   status: 'idle' | 'crawling' | 'auditing' | 'completed' | 'error';
@@ -42,6 +42,7 @@ export function useAudit() {
 
   const [results, setResults] = useState<{ pages: number; violations: number } | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
 
   const addLog = useCallback((message: string) => {
     const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -73,7 +74,7 @@ export function useAudit() {
     return () => clearInterval(interval);
   }, [progress.status, config.targetUrl, addLog]);
 
-  const startAudit = async () => {
+  const startAudit = useCallback(async () => {
     if (!config.targetUrl) {
       alert('대상 URL을 입력해주세요.');
       return;
@@ -125,6 +126,7 @@ export function useAudit() {
         pages: data.totalPages,
         violations: data.totalViolations,
       });
+      setAuditResult(data);
 
       localStorage.setItem('auditResult', JSON.stringify(data));
     } catch (error) {
@@ -138,7 +140,7 @@ export function useAudit() {
         message: `오류 발생: ${error}`,
       });
     }
-  };
+  }, [config, addLog]);
 
   const exportExcel = async () => {
     const savedResult = localStorage.getItem('auditResult');
@@ -160,6 +162,38 @@ export function useAudit() {
     }
   };
 
+  const saveToNotion = async () => {
+    const savedResult = localStorage.getItem('auditResult');
+    if (!savedResult) {
+      alert('먼저 진단을 수행해주세요.');
+      return;
+    }
+
+    try {
+      addLog('Notion 저장 중...');
+      const result = JSON.parse(savedResult);
+      const response = await fetch('/api/history/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(result),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save to Notion');
+      }
+
+      addLog('Notion 저장 완료! ✅');
+      alert('Notion에 성공적으로 저장되었습니다.');
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      alert(`Notion 저장 실패: ${msg}`);
+      addLog(`Notion 저장 오류: ${msg}`);
+    }
+  };
+
   return {
     config,
     setConfig,
@@ -168,6 +202,8 @@ export function useAudit() {
     logs,
     addLog,
     startAudit,
-    exportExcel
+    exportExcel,
+    saveToNotion,
+    auditResult
   };
 }

@@ -7,10 +7,11 @@ interface AuditTerminalProps {
   logs: LogEntry[];
   progress: ProgressState;
   onExport: () => void;
+  onSaveToNotion: () => void;
   resultSummary: { pages: number; violations: number } | null;
 }
 
-export const AuditTerminal = ({ logs, progress, onExport, resultSummary }: AuditTerminalProps) => {
+export const AuditTerminal = ({ logs, progress, onExport, onSaveToNotion, resultSummary }: AuditTerminalProps) => {
   const terminalRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll terminal
@@ -71,6 +72,9 @@ export const AuditTerminal = ({ logs, progress, onExport, resultSummary }: Audit
         <div className={styles['action-buttons']}>
           <Button variant="success" onClick={onExport}>
             📊 엑셀 다운로드
+          </Button>
+          <Button variant="primary" onClick={onSaveToNotion} style={{ background: '#000000', color: '#fff' }}>
+            📝 Notion 저장
           </Button>
           <a href="/report" className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', lineHeight: '46px' }}>
             📄 상세 리포트 보기

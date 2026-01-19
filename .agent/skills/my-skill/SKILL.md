@@ -44,7 +44,7 @@ description: 품질 게이트와 점진적 인도 구조를 갖춘 단계별 기
 - **커버리지 목표**: 해당 단계의 구체적인 백분율 또는 체크리스트
 
 ### 3단계: 계획 문서 생성
-`plan-template.md`를 사용하여 `docs/plans/PLAN_<기능명>.md`를 생성합니다.
+`resources/plan-template.md`를 사용하여 `docs/plans/PLAN_<기능명>.md`를 생성합니다.
 
 포함 내용:
 - 개요 및 목표
@@ -315,4 +315,4 @@ test '컴포넌트가 의존성을 호출해야 함':
 6. **테스트 데이터**: 필요한 픽스처/팩토리
 
 ## 관련 파일 참조
-- [plan-template.md](plan-template.md) - 한국어 계획 문서 템플릿
+- [resources/plan-template.md](resources/plan-template.md) - 한국어 계획 문서 템플릿
