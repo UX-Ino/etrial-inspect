@@ -99,6 +99,23 @@ export const AuditConfigForm = ({ config, setConfig, onStart, isProcessing }: Au
         </div>
       </div>
 
+      <div className={styles.row}>
+        <div className="form-group" style={{ flex: 1 }}>
+          <label>최대 페이지 수</label>
+          <input
+            type="number"
+            min="1"
+            max="1000"
+            placeholder="기본값: 10 (Vercel 권장)"
+            value={config.maxPages || ''}
+            onChange={(e) => setConfig({ ...config, maxPages: parseInt(e.target.value) || undefined })}
+          />
+          <small style={{ color: '#666', fontSize: '0.8rem' }}>
+            * Vercel 배포 환경에서는 <b>30장 이하</b> 권장 (Timeout 방지)
+          </small>
+        </div>
+      </div>
+
       <Button
         variant="primary"
         fullWidth

@@ -3,7 +3,7 @@ import { triggerAudit } from '@/services/AuditService';
 import { AuditConfig } from '@/types';
 
 // Set max duration for Vercel Serverless Function (Start with 60s, max 300s for Pro)
-export const maxDuration = 60;
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {

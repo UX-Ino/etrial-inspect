@@ -3,22 +3,20 @@ name: Accessibility Audit
 on:
   workflow_dispatch:
     inputs:
-      targetUrl:
+      target_url:
         description: 'Target URL to audit'
         required: true
-        type: string
-      userEmail:
-        description: 'User Email for notification (optional)'
-        required: false
-        type: string
+        default: 'https://example.com'
+  schedule:
+    - cron: '0 0 * * 1' # Weekly on Monday
 
 jobs:
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 60 # Can go up to 360
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,16 +31,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Audit
-        run: npx ts-node -r tsconfig-paths/register scripts/run-audit.ts
         env:
-          TARGET_URL: ${{ github.event.inputs.targetUrl }}
-          USER_EMAIL: ${{ github.event.inputs.userEmail }}
-          # Add other necessary env vars here (e.g. storage keys)
-
-      - name: Upload Audit Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: audit-results
-          path: audit-results/
-          retention-days: 7
+          TARGET_URL: ${{ github.event.inputs.target_url }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: npx ts-node scripts/run-audit.ts
