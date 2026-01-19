@@ -12,7 +12,6 @@ export interface AuditConfig {
   enableAICheck?: boolean;
   platform: 'PC' | 'Mobile';
   inspector: string;
-  maxPages?: number;
 }
 
 export interface PageInfo {

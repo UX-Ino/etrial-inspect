@@ -192,18 +192,52 @@ export function useAudit() {
       alert(`Notion 저장 실패: ${msg}`);
       addLog(`Notion 저장 오류: ${msg}`);
     }
-  };
+    const triggerGitHubAudit = async () => {
+      if (!config.targetUrl) {
+        alert('대상 URL을 입력해주세요.');
+        return;
+      }
 
-  return {
-    config,
-    setConfig,
-    progress,
-    results,
-    logs,
-    addLog,
-    startAudit,
-    exportExcel,
-    saveToNotion,
-    auditResult
-  };
-}
+      if (!confirm(`GitHub Actions를 통해 대규모 진단을 시작하시겠습니까?\n\n- 대상: ${config.targetUrl}\n- 제한: 시간 무제한 (최대 6시간)\n- 결과: GitHub Actions 탭에서 확인 가능\n\n진행하시겠습니까?`)) {
+        return;
+      }
+
+      try {
+        addLog('GitHub Actions 요청 중...');
+        const response = await fetch('/api/github/dispatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetUrl: config.targetUrl }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to dispatch workflow');
+        }
+
+        addLog('GitHub Actions 워크플로우가 시작되었습니다! 🚀');
+        addLog(`결과 확인: ${data.workflowUrl}`);
+        alert(`진단이 시작되었습니다.\nGitHub Actions 탭에서 진행 상황을 확인하세요.\n\n${data.workflowUrl}`);
+        window.open(data.workflowUrl, '_blank');
+      } catch (error: any) {
+        const msg = error.message || 'Unknown error';
+        addLog(`GitHub 요청 실패: ${msg}`);
+        alert(`요청 실패: ${msg}`);
+      }
+    };
+
+    return {
+      config,
+      setConfig,
+      progress,
+      results,
+      logs,
+      addLog,
+      startAudit,
+      triggerGitHubAudit,
+      exportExcel,
+      saveToNotion,
+      auditResult
+    };
+  }

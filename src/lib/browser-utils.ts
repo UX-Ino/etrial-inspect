@@ -39,12 +39,25 @@ export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promi
     }
   }
 
-  // Local: Try system Chrome
-  console.log('[Browser Launch] Using System Chrome (Local Development)');
-  return {
-    channel: 'chrome',
-    headless: isHeadless,
-  };
+  // Local Development or GitHub Actions (CI)
+  // Try to resolve the executable path from the 'playwright' package if available.
+  // This ensures we use the binary installed by `npx playwright install`, which is reliable in CI.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { chromium } = require('playwright');
+    console.log('[Browser Launch] Using Playwright Browser (CI/Local)');
+    return {
+      executablePath: chromium.executablePath(),
+      headless: isHeadless,
+    };
+  } catch (e) {
+    // Fallback: Try system Chrome (e.g. if 'playwright' package is not found or fails)
+    console.warn('[Browser Launch] Playwright package not found, falling back to System Chrome path');
+    return {
+      channel: 'chrome',
+      headless: isHeadless,
+    };
+  }
 };
 
 /**

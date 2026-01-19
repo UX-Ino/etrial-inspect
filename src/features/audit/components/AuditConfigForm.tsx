@@ -7,10 +7,11 @@ interface AuditConfigFormProps {
   config: AuditConfig;
   setConfig: (config: AuditConfig) => void;
   onStart: () => void;
+  onGitHubStart?: () => void;
   isProcessing: boolean;
 }
 
-export const AuditConfigForm = ({ config, setConfig, onStart, isProcessing }: AuditConfigFormProps) => {
+export const AuditConfigForm = ({ config, setConfig, onStart, onGitHubStart, isProcessing }: AuditConfigFormProps) => {
   return (
     <Card className={styles.card} title="진단 설정">
       <div className="form-group">
@@ -99,21 +100,6 @@ export const AuditConfigForm = ({ config, setConfig, onStart, isProcessing }: Au
         </div>
       </div>
 
-      <div className={styles.row}>
-        <div className="form-group" style={{ flex: 1 }}>
-          <label>최대 페이지 수</label>
-          <input
-            type="number"
-            min="1"
-            max="1000"
-            placeholder="기본값: 10 (Vercel 권장)"
-            value={config.maxPages || ''}
-            onChange={(e) => setConfig({ ...config, maxPages: parseInt(e.target.value) || undefined })}
-          />
-          <small style={{ color: '#666', fontSize: '0.8rem' }}>
-            * Vercel 배포 환경에서는 <b>30장 이하</b> 권장 (Timeout 방지)
-          </small>
-        </div>
       </div>
 
       <Button
@@ -125,6 +111,21 @@ export const AuditConfigForm = ({ config, setConfig, onStart, isProcessing }: Au
       >
         {isProcessing ? '진행 중...' : '🚀 전수 검사 시작'}
       </Button>
-    </Card>
+
+      {
+    onGitHubStart && (
+      <Button
+        variant="secondary"
+        fullWidth
+        onClick={onGitHubStart}
+        disabled={isProcessing}
+        style={{ marginTop: '0.5rem', backgroundColor: '#24292e', color: 'white' }}
+      >
+        <span style={{ marginRight: '0.5rem' }}>⚡️</span>
+        대규모 진단 (GitHub Actions)
+      </Button>
+    )
+  }
+    </Card >
   );
 };

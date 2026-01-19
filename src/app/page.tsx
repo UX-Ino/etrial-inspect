@@ -17,6 +17,7 @@ export default function Home() {
     results,
     logs,
     startAudit,
+    triggerGitHubAudit,
     exportExcel,
     saveToNotion, // keep original usage if needed, but we override handler
     auditResult
@@ -75,6 +76,7 @@ export default function Home() {
               config={config}
               setConfig={setConfig}
               onStart={startAudit}
+              onGitHubStart={triggerGitHubAudit}
               isProcessing={isProcessing}
             />
           </section>

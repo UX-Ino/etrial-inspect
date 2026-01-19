@@ -45,7 +45,7 @@ export async function runAudit(config: AuditConfig, onProgress?: (data: any) => 
   const isVercel = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
   const crawler = new WebCrawler({
     maxDepth: isVercel ? 2 : 10,
-    maxPages: config.maxPages || (isVercel ? 10 : 1000), // User config -> Vercel limit -> Local limit
+    maxPages: isVercel ? 5 : 1000,
     headless: true
   });
 
