@@ -6,19 +6,13 @@ export async function POST(request: NextRequest) {
   try {
     const config: AuditConfig = await request.json();
 
-    // Development mode: Run audit locally
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 Development mode detected: Running audit locally...');
+    // 🔧 Run audit logic (Environment-agnostic)
+    console.log('🚀 Starting audit execution...');
 
-      // Dynamic import to avoid bundling Playwright in production
-      const { runAudit } = await import('@/services/AuditExecutor');
-      const result = await runAudit(config);
+    // Dynamic import to avoid bundling Playwright in production
+    const { runAudit } = await import('@/services/AuditExecutor');
+    const result = await runAudit(config);
 
-      return NextResponse.json(result);
-    }
-
-    // Production mode: Trigger GitHub Action
-    const result = await triggerAudit(config);
     return NextResponse.json(result);
 
   } catch (error) {
