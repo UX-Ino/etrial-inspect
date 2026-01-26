@@ -35,4 +35,4 @@ jobs:
           TARGET_URL: ${{ github.event.inputs.target_url }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
-        run: npx ts-node scripts/run-audit.ts
+        run: npx tsx scripts/run-audit.ts
