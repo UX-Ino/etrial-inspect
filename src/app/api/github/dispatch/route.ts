@@ -45,9 +45,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `GitHub API Failed: ${response.status} ${response.statusText}` }, { status: response.status });
     }
 
+    // 트리거 후 최신 워크플로우 run_id 조회 (약간의 딜레이 후)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // 최신 워크플로우 실행 조회
+    const runsResponse = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/actions/runs?per_page=5`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      }
+    );
+
+    let runId = null;
+    if (runsResponse.ok) {
+      const runsData = await runsResponse.json();
+      const auditRuns = (runsData.workflow_runs || []).filter(
+        (run: any) => run.path === '.github/workflows/audit.yml'
+      );
+      if (auditRuns.length > 0) {
+        runId = auditRuns[0].id;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Workflow dispatched successfully',
+      runId: runId,
       workflowUrl: `https://github.com/${owner}/${repo}/actions`
     });
 

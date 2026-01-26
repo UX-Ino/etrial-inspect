@@ -7,9 +7,16 @@ import { useAudit } from '@/features/audit/hooks/useAudit';
 import { AuditConfigForm } from '@/features/audit/components/AuditConfigForm';
 import { AuditTerminal } from '@/features/audit/components/AuditTerminal';
 import { HistoryList } from '@/features/history/components/HistoryList';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export default function Home() {
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+
+  // 히스토리 갱신 콜백
+  const handleHistoryRefresh = useCallback(() => {
+    setHistoryRefreshTrigger(prev => prev + 1);
+  }, []);
+
   const {
     config,
     setConfig,
@@ -19,11 +26,10 @@ export default function Home() {
     startAudit,
     triggerGitHubAudit,
     exportExcel,
-    saveToNotion, // keep original usage if needed, but we override handler
-    auditResult
-  } = useAudit();
-
-  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+    saveToNotion,
+    auditResult,
+    isPollingGitHub,
+  } = useAudit(handleHistoryRefresh);
 
   const handleSaveToNotion = async () => {
     if (!auditResult) return;
@@ -48,7 +54,7 @@ export default function Home() {
     }
   };
 
-  const isProcessing = progress.status === 'crawling' || progress.status === 'auditing';
+  const isProcessing = progress.status === 'crawling' || progress.status === 'auditing' || progress.status === 'github_polling';
 
   return (
     <div className="container">

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AuditConfig, AuditResult } from '@/types';
 
 export interface ProgressState {
-  status: 'idle' | 'crawling' | 'auditing' | 'completed' | 'error';
+  status: 'idle' | 'crawling' | 'auditing' | 'completed' | 'error' | 'github_polling';
   currentUrl: string;
   totalFound: number;
   processed: number;
@@ -17,7 +17,7 @@ export interface LogEntry {
   message: string;
 }
 
-export function useAudit() {
+export function useAudit(onHistoryRefresh?: () => void) {
   const [config, setConfig] = useState<AuditConfig>({
     targetUrl: '',
     enableLogin: false,
@@ -44,10 +44,78 @@ export function useAudit() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
 
+  // GitHub Actions 폴링 상태
+  const [githubRunId, setGithubRunId] = useState<string | null>(null);
+  const [isPollingGitHub, setIsPollingGitHub] = useState(false);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const addLog = useCallback((message: string) => {
     const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setLogs(prev => [...prev.slice(-50), { time, message }]);
   }, []);
+
+  // GitHub Actions 상태 폴링
+  useEffect(() => {
+    if (!isPollingGitHub || !githubRunId) {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const pollStatus = async () => {
+      try {
+        const res = await fetch(`/api/github/status?runId=${githubRunId}`);
+        const data = await res.json();
+
+        if (data.error) {
+          addLog(`[GitHub] 상태 확인 오류: ${data.error}`);
+          return;
+        }
+
+        const statusMap: Record<string, string> = {
+          queued: '⏳ 대기 중',
+          in_progress: '🔄 진행 중',
+          completed: '✅ 완료됨',
+        };
+
+        addLog(`[GitHub] 상태: ${statusMap[data.status] || data.status}`);
+
+        if (data.status === 'completed') {
+          setIsPollingGitHub(false);
+          setProgress(prev => ({ ...prev, status: 'completed' }));
+
+          if (data.conclusion === 'success') {
+            addLog(`[GitHub] 검사 완료! 결과: 성공 ✅`);
+            addLog(`[GitHub] Notion에 결과가 저장되었습니다.`);
+            // 히스토리 목록 갱신
+            if (onHistoryRefresh) {
+              addLog(`[GitHub] 히스토리 목록 갱신 중...`);
+              onHistoryRefresh();
+            }
+          } else {
+            addLog(`[GitHub] 검사 완료! 결과: ${data.conclusion}`);
+          }
+        }
+      } catch (error) {
+        addLog(`[GitHub] 폴링 오류: ${error}`);
+      }
+    };
+
+    // 첫 번째 폴링
+    pollStatus();
+
+    // 5초마다 폴링
+    pollingIntervalRef.current = setInterval(pollStatus, 5000);
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [isPollingGitHub, githubRunId, addLog, onHistoryRefresh]);
 
   // Fake logs generator for visual feedback during crawling
   useEffect(() => {
@@ -192,18 +260,30 @@ export function useAudit() {
       addLog(`Notion 저장 오류: ${msg}`);
     }
   };
+
   const triggerGitHubAudit = async () => {
     if (!config.targetUrl) {
       alert('대상 URL을 입력해주세요.');
       return;
     }
 
-    if (!confirm(`GitHub Actions를 통해 대규모 진단을 시작하시겠습니까?\n\n- 대상: ${config.targetUrl}\n- 제한: 시간 무제한 (최대 6시간)\n- 결과: GitHub Actions 탭에서 확인 가능\n\n진행하시겠습니까?`)) {
+    if (!confirm(`GitHub Actions를 통해 대규모 진단을 시작하시겠습니까?\n\n- 대상: ${config.targetUrl}\n- 제한: 시간 무제한 (최대 6시간)\n- 결과: 완료 시 자동으로 표시됩니다.\n\n진행하시겠습니까?`)) {
       return;
     }
 
     try {
-      addLog('GitHub Actions 요청 중...');
+      setLogs([]);
+      addLog('GitHub Actions 워크플로우 트리거 중...');
+
+      setProgress({
+        status: 'github_polling',
+        currentUrl: config.targetUrl,
+        totalFound: 0,
+        processed: 0,
+        violations: 0,
+        message: 'GitHub Actions 진행 중...',
+      });
+
       const response = await fetch('/api/github/dispatch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -217,15 +297,30 @@ export function useAudit() {
       }
 
       addLog('GitHub Actions 워크플로우가 시작되었습니다! 🚀');
-      addLog(`결과 확인: ${data.workflowUrl}`);
-      alert(`진단이 시작되었습니다.\nGitHub Actions 탭에서 진행 상황을 확인하세요.\n\n${data.workflowUrl}`);
-      window.open(data.workflowUrl, '_blank');
+
+      if (data.runId) {
+        addLog(`[GitHub] Run ID: ${data.runId}`);
+        addLog('[GitHub] 5초마다 상태를 확인합니다...');
+        setGithubRunId(String(data.runId));
+        setIsPollingGitHub(true);
+      } else {
+        addLog(`결과 확인: ${data.workflowUrl}`);
+        window.open(data.workflowUrl, '_blank');
+      }
     } catch (error: any) {
       const msg = error.message || 'Unknown error';
       addLog(`GitHub 요청 실패: ${msg}`);
       alert(`요청 실패: ${msg}`);
+      setProgress(prev => ({ ...prev, status: 'error', message: msg }));
     }
   };
+
+  // 폴링 중지 함수
+  const stopGitHubPolling = useCallback(() => {
+    setIsPollingGitHub(false);
+    setGithubRunId(null);
+    addLog('[GitHub] 폴링이 중지되었습니다.');
+  }, [addLog]);
 
   return {
     config,
@@ -238,6 +333,8 @@ export function useAudit() {
     triggerGitHubAudit,
     exportExcel,
     saveToNotion,
-    auditResult
+    auditResult,
+    isPollingGitHub,
+    stopGitHubPolling,
   };
 }
