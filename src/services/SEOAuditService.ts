@@ -544,23 +544,35 @@ ${siteName}는 [서비스 설명]을 제공하는 웹사이트입니다.
         }
 
         // 3. AI Enrichment (Professional Findings)
-        // GEO Analysis (@houtini/geo-analyzer)
-        const patternAnalyzer = new PatternAnalyzer();
-        const geoResults = patternAnalyzer.analyze(html, 'SEO optimization', html);
+        const professionalFindings: string[] = [];
+
+        // GEO Analysis (@houtini/geo-analyzer) - MCP 서버 전용 패키지이므로 직접 사용 불가
+        // PatternAnalyzer는 내부 서비스용으로 export되지 않음
+        if (PatternAnalyzer && typeof PatternAnalyzer === 'function') {
+          try {
+            const patternAnalyzer = new PatternAnalyzer();
+            const geoResults = patternAnalyzer.analyze(html, 'SEO optimization', html);
+            if (geoResults && geoResults.metrics) {
+              professionalFindings.push(`[GEO] Claim Density: ${geoResults.metrics.claimDensity.density.toFixed(2)} facts/chunk`);
+              professionalFindings.push(`[GEO] Citability Score: ${geoResults.scores.citability.toFixed(2)}/1.0`);
+            }
+          } catch (geoError) {
+            console.warn('[SEO] GEO analysis skipped:', geoError);
+          }
+        }
 
         // Readability Analysis (@capyseo/core)
-        // HTML에서 텍스트만 추출 (간단하게 태그 제거)
-        const textOnly = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const readability = analyzeReadability(textOnly);
-
-        // 정밀 분석 결과 취합
-        const professionalFindings: string[] = [];
-        if (geoResults && geoResults.metrics) {
-          professionalFindings.push(`[GEO] Claim Density: ${geoResults.metrics.claimDensity.density.toFixed(2)} facts/chunk`);
-          professionalFindings.push(`[GEO] Citability Score: ${geoResults.scores.citability.toFixed(2)}/1.0`);
-        }
-        if (readability) {
-          professionalFindings.push(`[Readability] Ease: ${readability.fleschReadingEase.toFixed(1)}/100, Grade: ${readability.fleschKincaidGrade.toFixed(1)}`);
+        if (analyzeReadability && typeof analyzeReadability === 'function') {
+          try {
+            // HTML에서 텍스트만 추출 (간단하게 태그 제거)
+            const textOnly = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            const readability = analyzeReadability(textOnly);
+            if (readability) {
+              professionalFindings.push(`[Readability] Ease: ${readability.fleschReadingEase.toFixed(1)}/100, Grade: ${readability.fleschKincaidGrade.toFixed(1)}`);
+            }
+          } catch (readabilityError) {
+            console.warn('[SEO] Readability analysis skipped:', readabilityError);
+          }
         }
 
         // 결과 객체에 포함 (AIPromptData 생성 시 활용을 위해 MetadataAnalysisResult에는 없지만 런타임에 주입)
