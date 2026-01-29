@@ -29,6 +29,13 @@ async function main() {
     console.log('Audit Completed successfully.');
     console.log(JSON.stringify(result, null, 2));
 
+    // GitHub Actions에서 실행된 경우 Artifact 이름 추가
+    const githubRunId = process.env.GITHUB_RUN_ID;
+    if (githubRunId) {
+      result.artifactName = `screenshots-${githubRunId}`;
+      console.log(`[Artifact] Name: ${result.artifactName}`);
+    }
+
     // Check if any errors occurred during audit logic that didn't throw
     if (result.violations.length > 0) {
       console.log(`Found ${result.violations.length} violations.`);

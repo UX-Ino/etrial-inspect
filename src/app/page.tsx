@@ -29,6 +29,8 @@ export default function Home() {
     saveToNotion,
     auditResult,
     isPollingGitHub,
+    latestReportId,
+    wasGitHubAudit,
   } = useAudit(handleHistoryRefresh);
 
   const handleSaveToNotion = async () => {
@@ -95,6 +97,8 @@ export default function Home() {
               onExport={exportExcel}
               onSaveToNotion={() => { if (auditResult) handleSaveToNotion(); }}
               resultSummary={results}
+              latestReportId={latestReportId}
+              wasGitHubAudit={wasGitHubAudit}
             />
           </section>
 

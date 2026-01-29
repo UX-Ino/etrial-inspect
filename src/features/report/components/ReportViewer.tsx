@@ -156,6 +156,7 @@ export const ReportViewer = ({ initialResult }: ReportViewerProps) => {
           violation={selectedViolation}
           boundingBox={selectedViolation.boundingBox}
           screenshotPath={selectedViolation.screenshotPath}
+          artifactName={result?.artifactName}
           onClose={() => setSelectedViolation(null)}
         />
       )}

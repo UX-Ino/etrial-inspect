@@ -30,6 +30,7 @@ export interface HistoryItem {
   score: number;
   violationCount: number;
   reportLink: string | null;
+  artifactName?: string; // GitHub Actions Artifact 이름
 }
 
 export interface BoundingBox {
@@ -81,6 +82,7 @@ export interface AuditResult {
   pages: PageInfo[];
   violations: Violation[];
   seoResult?: SEOAuditResult;
+  artifactName?: string; // GitHub Actions Artifact 이름 (e.g., "screenshots-123456")
   summary: {
     byPrinciple: Record<string, number>;
     byImpact: Record<string, number>;

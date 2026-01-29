@@ -79,9 +79,13 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
               <span className={styles.violations}>위반 {item.violationCount}건</span>
             </div>
             <div className={styles.itemActions}>
+              {/* Notion 페이지 ID 기반 상세 리포트 */}
+              <a href={`/report/${item.id}`} className={styles.btnLink}>
+                리포트 보기
+              </a>
               {item.reportLink && (
                 <a href={item.reportLink} target="_blank" rel="noopener noreferrer" className={styles.btnLink}>
-                  리포트 보기
+                  Notion
                 </a>
               )}
               <button

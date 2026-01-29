@@ -9,9 +9,11 @@ interface AuditTerminalProps {
   onExport: () => void;
   onSaveToNotion: () => void;
   resultSummary: { pages: number; violations: number } | null;
+  latestReportId?: string | null;
+  wasGitHubAudit?: boolean;
 }
 
-export const AuditTerminal = ({ logs, progress, onExport, onSaveToNotion, resultSummary }: AuditTerminalProps) => {
+export const AuditTerminal = ({ logs, progress, onExport, onSaveToNotion, resultSummary, latestReportId, wasGitHubAudit }: AuditTerminalProps) => {
   const terminalRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll terminal
@@ -76,7 +78,11 @@ export const AuditTerminal = ({ logs, progress, onExport, onSaveToNotion, result
           <Button variant="primary" onClick={onSaveToNotion} style={{ background: '#000000', color: '#fff' }}>
             📝 Notion 저장
           </Button>
-          <a href="/report" className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', lineHeight: '46px' }}>
+          <a
+            href={wasGitHubAudit && latestReportId ? `/report/${latestReportId}` : '/report'}
+            className="btn btn-secondary"
+            style={{ flex: 1, textAlign: 'center', lineHeight: '46px' }}
+          >
             📄 상세 리포트 보기
           </a>
         </div>

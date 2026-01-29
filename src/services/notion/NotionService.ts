@@ -223,6 +223,9 @@ export class NotionService {
           },
           'Report Link': {
             url: reportUrl || null,
+          },
+          'Artifact Name': {
+            rich_text: result.artifactName ? [{ text: { content: result.artifactName } }] : [],
           }
         },
         children: children.slice(0, 100), // First 100 blocks
@@ -342,6 +345,7 @@ export class NotionService {
           score: props['Score (Total)']?.number || 0,
           violationCount: props['Violations']?.number || 0,
           reportLink: props['Report Link']?.url || null,
+          artifactName: props['Artifact Name']?.rich_text?.[0]?.plain_text || null,
         };
       });
     } catch (error) {

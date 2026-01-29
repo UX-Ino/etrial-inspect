@@ -47,6 +47,8 @@ export function useAudit(onHistoryRefresh?: () => void) {
   // GitHub Actions 폴링 상태
   const [githubRunId, setGithubRunId] = useState<string | null>(null);
   const [isPollingGitHub, setIsPollingGitHub] = useState(false);
+  const [latestReportId, setLatestReportId] = useState<string | null>(null);
+  const [wasGitHubAudit, setWasGitHubAudit] = useState(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const addLog = useCallback((message: string) => {
@@ -89,10 +91,24 @@ export function useAudit(onHistoryRefresh?: () => void) {
           if (data.conclusion === 'success') {
             addLog(`[GitHub] 검사 완료! 결과: 성공 ✅`);
             addLog(`[GitHub] Notion에 결과가 저장되었습니다.`);
-            // 히스토리 목록 갱신
+            setWasGitHubAudit(true);
+            // 히스토리 목록 갱신 및 최신 리포트 ID 가져오기
             if (onHistoryRefresh) {
               addLog(`[GitHub] 히스토리 목록 갱신 중...`);
               onHistoryRefresh();
+            }
+            // 최신 리포트 ID 가져오기
+            try {
+              const historyRes = await fetch('/api/history/list', { cache: 'no-store' });
+              if (historyRes.ok) {
+                const historyData = await historyRes.json();
+                if (historyData.length > 0) {
+                  setLatestReportId(historyData[0].id);
+                  addLog(`[GitHub] 최신 리포트 ID: ${historyData[0].id}`);
+                }
+              }
+            } catch (err) {
+              addLog(`[GitHub] 히스토리 조회 오류: ${err}`);
             }
           } else {
             addLog(`[GitHub] 검사 완료! 결과: ${data.conclusion}`);
@@ -336,5 +352,7 @@ export function useAudit(onHistoryRefresh?: () => void) {
     auditResult,
     isPollingGitHub,
     stopGitHubPolling,
+    latestReportId,
+    wasGitHubAudit,
   };
 }
