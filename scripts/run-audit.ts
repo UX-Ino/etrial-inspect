@@ -1,4 +1,5 @@
 
+import * as fs from 'fs';
 import { runAudit } from '../src/services/AuditExecutor';
 import { AuditConfig } from '../src/types';
 import { NotionService } from '../src/services/notion/NotionService';
@@ -29,11 +30,38 @@ async function main() {
     console.log('Audit Completed successfully.');
     console.log(JSON.stringify(result, null, 2));
 
-    // GitHub Actions에서 실행된 경우 Artifact 이름 추가
+    // GitHub Actions에서 실행된 경우 Artifact 이름 및 URL 추가
     const githubRunId = process.env.GITHUB_RUN_ID;
+    const githubRepo = process.env.GITHUB_REPOSITORY;
+
     if (githubRunId) {
       result.artifactName = `screenshots-${githubRunId}`;
       console.log(`[Artifact] Name: ${result.artifactName}`);
+
+      if (githubRepo) {
+        const [owner, repo] = githubRepo.split('/');
+        // GitHub Pages URL 생성 (Base URL)
+        // 예: https://UX-Ino.github.io/etrial-inspect/screenshots/12345/
+        result.screenshotUrl = `https://${owner}.github.io/${repo}/screenshots/${githubRunId}/`;
+        console.log(`[Artifact] URL: ${result.screenshotUrl}`);
+
+        // GITHUB_STEP_SUMMARY에 링크 추가
+        const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+        if (summaryFile) {
+          try {
+            const summaryContent = `
+### 📸 Audit Screenshots
+[View Screenshots on GitHub Pages](${result.screenshotUrl})
+
+> **Note:** Screenshots are deployed to GitHub Pages. If the link returns 404, please wait a moment for the deployment to finish.
+`;
+            fs.appendFileSync(summaryFile, summaryContent);
+            console.log(`[Summary] Added screenshot link to Job Summary.`);
+          } catch (e) {
+            console.error(`[Summary] Failed to write to GITHUB_STEP_SUMMARY:`, e);
+          }
+        }
+      }
     }
 
     // Check if any errors occurred during audit logic that didn't throw

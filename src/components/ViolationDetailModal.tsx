@@ -7,6 +7,7 @@ interface ViolationDetailModalProps {
   boundingBox?: BoundingBox;
   screenshotPath?: string;
   artifactName?: string | null;
+  screenshotUrl?: string | null;
   onClose: () => void;
 }
 
@@ -15,6 +16,7 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
   boundingBox,
   screenshotPath,
   artifactName,
+  screenshotUrl,
   onClose,
 }) => {
   if (!violation) return null;
@@ -49,18 +51,23 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
 
   // 스크린샷 유무 확인 및 URL 결정
   const hasScreenshot = Boolean(screenshotPath);
-  const isArtifactScreenshot = Boolean(artifactName && screenshotPath);
 
-  // Artifact 스크린샷인 경우 안내 메시지 표시 (직접 다운로드 필요)
-  const showArtifactNote = isArtifactScreenshot;
+  // GitHub Pages URL 로직: screenshotPath에서 파일명 추출 후 Base URL과 결합
+  const filename = screenshotPath ? screenshotPath.split('/').pop() : '';
+  const finalImageUrl = screenshotUrl && filename ? `${screenshotUrl}${filename}` : screenshotPath;
+
+  // Artifact 노트 표시 여부: artifactName이 있고, URL로 바로 볼 수 없는 경우에만 표시
+  const showArtifactNote = Boolean(artifactName && screenshotPath && !screenshotUrl);
 
   // Artifact 다운로드 URL 상태
   const [artifactUrl, setArtifactUrl] = useState<string | null>(null);
   const [isLoadingArtifact, setIsLoadingArtifact] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
 
   useEffect(() => {
     if (artifactName && !hasScreenshot) {
       setIsLoadingArtifact(true);
+      setDownloadError(false);
       // 스크린샷 파일명 추출 (경로에서)
       const filename = screenshotPath ? screenshotPath.split('/').pop() : '';
 
@@ -69,12 +76,21 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
         .then(data => {
           if (data.downloadUrl) {
             setArtifactUrl(data.downloadUrl);
+          } else {
+            setDownloadError(true);
           }
         })
-        .catch(err => console.error('Failed to fetch artifact url:', err))
+        .catch(err => {
+          console.error('Failed to fetch artifact url:', err);
+          setDownloadError(true);
+        })
         .finally(() => setIsLoadingArtifact(false));
     }
   }, [artifactName, hasScreenshot, screenshotPath]);
+
+  // GitHub Actions Run ID 추출 (screenshots-12345678 -> 12345678)
+  const runId = artifactName?.replace('screenshots-', '');
+  const actionsUrl = runId ? `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_REPO || 'UX-Ino/etrial-inspect'}/actions/runs/${runId}` : '#';
 
   return (
     <div className={styles['modal-overlay']} onClick={onClose}>
@@ -93,10 +109,14 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
             <div className={styles['screenshot-container']}>
               <img
                 ref={imgRef}
-                src={screenshotPath}
+                src={finalImageUrl}
                 alt="Page Screenshot"
                 className={styles['screenshot-img']}
                 onLoad={updateScale}
+                onError={(e) => {
+                  console.error('Image load failed:', finalImageUrl);
+                  // 로드 실패 시 스타일 조정 (선택 사항)
+                }}
               />
               {boundingBox && (
                 <div
@@ -114,24 +134,41 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
             </div>
           ) : showArtifactNote ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-              <p>📦 이 스크린샷은 GitHub Actions Artifact에 저장되어 있습니다.</p>
-              <p style={{ fontSize: '14px', marginTop: '12px' }}>
-                Artifact 이름: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>{artifactName}</code>
+              <p style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
+                📦 스크린샷 확인 안내
               </p>
-              <p style={{ fontSize: '13px', marginTop: '8px', color: '#999' }}>
-                GitHub 저장소의 Actions 탭에서 Artifact를 다운로드할 수 있습니다.
-              </p>
+              <p>GitHub Actions 환경에서는 보안 정책상 이미지를 바로 볼 수 없으며,<br />압축 파일(ZIP)로 다운로드해야 합니다.</p>
+
+              <div style={{ margin: '20px 0', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+                <p style={{ fontSize: '14px', marginBottom: '4px' }}>Artifact 이름</p>
+                <code style={{ background: '#e9ecef', padding: '4px 8px', borderRadius: '4px', color: '#333' }}>{artifactName}</code>
+              </div>
+
               {isLoadingArtifact ? (
-                <p style={{ marginTop: '12px', fontSize: '13px' }}>⏳ 다운로드 링크 확인 중...</p>
+                <p style={{ marginTop: '12px', fontSize: '13px' }}>⏳ 다운로드 링크 생성 중...</p>
               ) : artifactUrl ? (
                 <a
                   href={artifactUrl}
                   className={styles['open-link-btn']}
-                  style={{ display: 'inline-block', marginTop: '12px', background: '#2da44e', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px' }}
+                  style={{ display: 'inline-block', marginTop: '12px', background: '#2da44e', border: 'none', color: 'white', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}
                 >
                   📥 Artifact ZIP 다운로드
                 </a>
-              ) : null}
+              ) : (
+                <div style={{ marginTop: '12px' }}>
+                  <p style={{ color: '#d73a49', fontSize: '13px', marginBottom: '8px' }}>
+                    ⚠️ 다운로드 링크를 가져올 수 없습니다.
+                  </p>
+                  <a
+                    href={actionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#0366d6', textDecoration: 'underline', fontSize: '13px', cursor: 'pointer' }}
+                  >
+                    GitHub Actions 실행 페이지에서 직접 확인하기 &rarr;
+                  </a>
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>

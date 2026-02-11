@@ -226,6 +226,9 @@ export class NotionService {
           },
           'Artifact Name': {
             rich_text: result.artifactName ? [{ text: { content: result.artifactName } }] : [],
+          },
+          'Screenshot URL': {
+            url: result.screenshotUrl || null,
           }
         },
         children: children.slice(0, 100), // First 100 blocks
@@ -346,6 +349,7 @@ export class NotionService {
           violationCount: props['Violations']?.number || 0,
           reportLink: props['Report Link']?.url || null,
           artifactName: props['Artifact Name']?.rich_text?.[0]?.plain_text || null,
+          screenshotUrl: props['Screenshot URL']?.url || null,
         };
       });
     } catch (error) {

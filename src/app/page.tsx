@@ -7,9 +7,11 @@ import { useAudit } from '@/features/audit/hooks/useAudit';
 import { AuditConfigForm } from '@/features/audit/components/AuditConfigForm';
 import { AuditTerminal } from '@/features/audit/components/AuditTerminal';
 import { HistoryList } from '@/features/history/components/HistoryList';
+import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 
 export default function Home() {
+  const router = useRouter();
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
 
   // 히스토리 갱신 콜백
@@ -31,6 +33,7 @@ export default function Home() {
     isPollingGitHub,
     latestReportId,
     wasGitHubAudit,
+    checkAndNavigateToLatestReport,
   } = useAudit(handleHistoryRefresh);
 
   const handleSaveToNotion = async () => {
@@ -54,6 +57,10 @@ export default function Home() {
       console.error('Failed to save:', error);
       alert('저장 실패: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
+  };
+
+  const handleViewLatestReport = () => {
+    checkAndNavigateToLatestReport(router);
   };
 
   const isProcessing = progress.status === 'crawling' || progress.status === 'auditing' || progress.status === 'github_polling';
@@ -99,6 +106,7 @@ export default function Home() {
               resultSummary={results}
               latestReportId={latestReportId}
               wasGitHubAudit={wasGitHubAudit}
+              onViewLatestReport={handleViewLatestReport}
             />
           </section>
 

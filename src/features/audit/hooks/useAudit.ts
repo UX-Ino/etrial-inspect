@@ -93,23 +93,27 @@ export function useAudit(onHistoryRefresh?: () => void) {
             addLog(`[GitHub] Notion에 결과가 저장되었습니다.`);
             setWasGitHubAudit(true);
             // 히스토리 목록 갱신 및 최신 리포트 ID 가져오기
-            if (onHistoryRefresh) {
-              addLog(`[GitHub] 히스토리 목록 갱신 중...`);
-              onHistoryRefresh();
-            }
-            // 최신 리포트 ID 가져오기
-            try {
-              const historyRes = await fetch('/api/history/list', { cache: 'no-store' });
-              if (historyRes.ok) {
-                const historyData = await historyRes.json();
-                if (historyData.length > 0) {
-                  setLatestReportId(historyData[0].id);
-                  addLog(`[GitHub] 최신 리포트 ID: ${historyData[0].id}`);
-                }
+            addLog(`[GitHub] Notion 저장 완료 대기 중... (3초)`);
+
+            setTimeout(async () => {
+              if (onHistoryRefresh) {
+                addLog(`[GitHub] 히스토리 목록 갱신 중...`);
+                onHistoryRefresh();
               }
-            } catch (err) {
-              addLog(`[GitHub] 히스토리 조회 오류: ${err}`);
-            }
+              // 최신 리포트 ID 가져오기
+              try {
+                const historyRes = await fetch('/api/history/list', { cache: 'no-store' });
+                if (historyRes.ok) {
+                  const historyData = await historyRes.json();
+                  if (historyData.length > 0) {
+                    setLatestReportId(historyData[0].id);
+                    addLog(`[GitHub] 최신 리포트 ID 확인 완료: ${historyData[0].id}`);
+                  }
+                }
+              } catch (err) {
+                addLog(`[GitHub] 히스토리 조회 오류: ${err}`);
+              }
+            }, 3000);
           } else {
             addLog(`[GitHub] 검사 완료! 결과: ${data.conclusion}`);
           }
@@ -338,6 +342,71 @@ export function useAudit(onHistoryRefresh?: () => void) {
     addLog('[GitHub] 폴링이 중지되었습니다.');
   }, [addLog]);
 
+  // 최신 리포트 확인 및 이동 (On-demand)
+  // 최신 리포트 확인 및 이동 (On-demand)
+  const checkAndNavigateToLatestReport = async (router: any) => {
+    try {
+      addLog('[System] 리포트 결과 확인 중...');
+
+      // 1. 서버(Notion)에서 최신 리포트 확인
+      let serverLatestId = null;
+      let isServerLatestRecent = false;
+
+      try {
+        const res = await fetch('/api/history/list', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const latest = data[0];
+            const reportDate = new Date(latest.date);
+            const now = new Date();
+
+            // 유효한 날짜인지 확인
+            if (!isNaN(reportDate.getTime())) {
+              // 차이 계산 (분 단위)
+              const diffMinutes = (now.getTime() - reportDate.getTime()) / (1000 * 60);
+
+              // 10분 이내에 생성된 리포트만 유효한 것으로 간주
+              if (diffMinutes >= 0 && diffMinutes < 10) {
+                serverLatestId = latest.id;
+                isServerLatestRecent = true;
+              } else {
+                console.log(`[System] 서버 최신 리포트가 오래됨 (${Math.round(diffMinutes)}분 전). 무시합니다.`);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch history:', e);
+      }
+
+      // 서버에 최신 리포트가 있으면 이동
+      if (isServerLatestRecent && serverLatestId) {
+        addLog(`[System] 최신 리포트로 이동합니다.`);
+        router.push(`/report/${serverLatestId}`);
+        return;
+      }
+
+      // 2. 로컬 스토리지 확인 (로컬 진단 수행 결과)
+      // GitHub Actions 모드였다면 로컬에 없을 수 있으므로 후순위 체크
+      const localResult = localStorage.getItem('auditResult');
+      if (localResult) {
+        // 로컬 결과가 너무 오래된 건 아닌지 체크할 수도 있지만,
+        // 로컬은 사용자가 명시적으로 지우지 않는 한 유지되므로 일단 이동 허용
+        addLog(`[System] 로컬 리포트로 이동합니다.`);
+        router.push('/report');
+        return;
+      }
+
+      // 3. 결과 없음
+      alert('최신 진단 결과를 찾을 수 없습니다.\n\nGitHub Actions 실행 직후라면 잠시(약 10초) 후에 다시 버튼을 눌러주세요.');
+
+    } catch (error) {
+      console.error('Failed to navigate:', error);
+      alert('리포트 조회 중 오류가 발생했습니다.');
+    }
+  };
+
   return {
     config,
     setConfig,
@@ -352,7 +421,10 @@ export function useAudit(onHistoryRefresh?: () => void) {
     auditResult,
     isPollingGitHub,
     stopGitHubPolling,
+    // Assuming latestReportId and wasGitHubAudit are defined elsewhere in the scope
+    // and should be returned as per the instruction's return object structure.
     latestReportId,
     wasGitHubAudit,
+    checkAndNavigateToLatestReport,
   };
 }

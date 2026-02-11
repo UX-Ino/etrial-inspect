@@ -31,6 +31,7 @@ export interface HistoryItem {
   violationCount: number;
   reportLink: string | null;
   artifactName?: string; // GitHub Actions Artifact 이름
+  screenshotUrl?: string; // GitHub Pages Screenshot URL
 }
 
 export interface BoundingBox {
@@ -83,6 +84,7 @@ export interface AuditResult {
   violations: Violation[];
   seoResult?: SEOAuditResult;
   artifactName?: string; // GitHub Actions Artifact 이름 (e.g., "screenshots-123456")
+  screenshotUrl?: string; // GitHub Pages Screenshot URL
   summary: {
     byPrinciple: Record<string, number>;
     byImpact: Record<string, number>;
