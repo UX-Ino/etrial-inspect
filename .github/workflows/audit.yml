@@ -52,7 +52,7 @@ jobs:
 
       - name: Deploy Screenshots to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
-        if: always() // Run even if audit fails (partial screenshots)
+        if: always() # Run even if audit fails (partial screenshots)
         with:
           branch: gh-pages
           folder: public/screenshots

@@ -62,6 +62,23 @@ async function main() {
           }
         }
       }
+    } else {
+      // Local Execution
+      console.log(`[Local] Running in local environment.`);
+      const localBaseUrl = 'http://localhost:3000/screenshots/';
+      // result.screenshotUrl = localBaseUrl; // Optional, might be useful for some logic
+      console.log(`[Local] Screenshots are saved in 'public/screenshots'`);
+      console.log(`[Local] Open screenshots in browser: ${localBaseUrl}`);
+
+      if (result.violations.length > 0) {
+        console.log(`[Local] Violations found:`);
+        result.violations.forEach((v: any) => {
+          if (v.screenshotPath) {
+            const filename = v.screenshotPath.split('/').pop();
+            console.log(`  - ${v.kwcagName} (${v.impact}): ${localBaseUrl}${filename}`);
+          }
+        });
+      }
     }
 
     // Check if any errors occurred during audit logic that didn't throw
