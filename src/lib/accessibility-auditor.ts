@@ -131,11 +131,20 @@ export class AccessibilityAuditor {
       const publicScreenshotPath = `/screenshots/${filename}`;
 
       try {
-        await page.screenshot({ path: screenshotPath, fullPage: true });
+        try {
+          await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 15000 });
+        } catch (e) {
+          console.warn(`Full page screenshot failed for ${url}, trying viewport only:`, e);
+          await page.screenshot({ path: screenshotPath, fullPage: false, timeout: 10000 });
+        }
+
+        // Only verify if file exists to be sure
+        if (fs.existsSync(screenshotPath)) {
+          screenshotPaths.push(publicScreenshotPath);
+        }
       } catch (e) {
         console.error(`Failed to capture screenshot for ${url}:`, e);
       }
-      screenshotPaths.push(publicScreenshotPath);
 
       // 기본 접근성 스캔
       const axePath = isDev
@@ -205,12 +214,34 @@ export class AccessibilityAuditor {
         }
       }
 
-      // impact null/undefined 처리
+      // impact null/undefined 처리 및 3:1 명도대비 필터링
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let allViolations = axeResults.violations.map((v: any) => ({
-        ...v,
-        impact: v.impact || 'minor'
-      }));
+      let allViolations = axeResults.violations.map((v: any) => {
+        let nodes = v.nodes;
+        if (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') {
+          nodes = nodes.filter((node: any) => {
+            const checks = [...(node.any || []), ...(node.all || []), ...(node.none || [])];
+            const contrastCheck = checks.find(c => c.id === 'color-contrast' || c.id === 'color-contrast-enhanced');
+            if (contrastCheck && contrastCheck.data && typeof contrastCheck.data.contrastRatio === 'number') {
+              return contrastCheck.data.contrastRatio < 3.0; // 3.0 이상이면 위반 아님
+            }
+            return true;
+          });
+
+          // failureSummary 텍스트 수정 (4.5:1 -> 3.0:1)
+          nodes = nodes.map((node: any) => {
+            if (node.failureSummary) {
+              node.failureSummary = node.failureSummary.replace(/4\.5:1/g, '3.0:1');
+            }
+            return node;
+          });
+        }
+        return {
+          ...v,
+          nodes,
+          impact: v.impact || 'minor'
+        };
+      }).filter((v: any) => v.nodes.length > 0);
 
       // 동적 요소 검사 (옵션)
       if (this.options.enableDynamicCheck) {

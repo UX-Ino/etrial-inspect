@@ -71,8 +71,8 @@ export const KWCAG_MAPPING: KWCAGItem[] = [
     checkItem: '명도 대비',
     axeRules: ['color-contrast', 'color-contrast-enhanced'],
     automationLevel: 'high',
-    description: '텍스트와 배경 간의 명도 대비는 4.5:1 이상이어야 한다.',
-    help: '텍스트와 배경의 색상 대비를 높여 시력이 낮은 사용자도 읽을 수 있도록 수정하세요. (4.5:1 이상 권장)',
+    description: '텍스트와 배경 간의 명도 대비는 3:1 이상이어야 한다.',
+    help: '텍스트와 배경의 색상 대비를 높여 시력이 낮은 사용자도 읽을 수 있도록 수정하세요. (3:1 이상 권장)',
   },
   {
     id: '1.4.2',
