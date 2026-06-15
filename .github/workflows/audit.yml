@@ -7,6 +7,10 @@ on:
         description: 'Target URL to audit'
         required: true
         default: 'https://example.com'
+      exclude_paths:
+        description: 'Comma-separated paths to exclude (e.g. /eng,/admin)'
+        required: false
+        default: ''
   schedule:
     - cron: '0 0 * * 1' # Weekly on Monday
 
@@ -35,6 +39,7 @@ jobs:
       - name: Run Audit
         env:
           TARGET_URL: ${{ github.event.inputs.target_url }}
+          EXCLUDE_PATHS: ${{ github.event.inputs.exclude_paths }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
           GITHUB_RUN_ID: ${{ github.run_id }}

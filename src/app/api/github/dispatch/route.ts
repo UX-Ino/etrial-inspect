@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
           ref: ref,
           inputs: {
             target_url: targetUrl,
+            exclude_paths: body.excludePaths || '',
           },
         }),
       }

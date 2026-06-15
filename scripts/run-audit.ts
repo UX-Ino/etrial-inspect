@@ -13,11 +13,12 @@ async function main() {
 
   const config: AuditConfig = {
     targetUrl: targetUrl,
-    enableLogin: false, // Default to false for GHA for now, or pass via env
+    enableLogin: false,
     enableAccessibilityCheck: true,
     enableSEOCheck: true,
     platform: 'PC',
-    inspector: 'GitHub Actions'
+    inspector: 'GitHub Actions',
+    excludePaths: process.env.EXCLUDE_PATHS || '',
   };
 
   console.log('Starting Audit for:', targetUrl);

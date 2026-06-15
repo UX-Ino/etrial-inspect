@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+build
+.env
+.env.*
+auth_state.json
+public/screenshots
+.git
+.gitignore
+.claude
+.agent
+docs
+*.md
+coverage
+npm-debug.log*
+.DS_Store

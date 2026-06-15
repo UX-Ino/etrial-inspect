@@ -349,40 +349,30 @@ export function useAudit(onHistoryRefresh?: () => void) {
     try {
       addLog('[System] 리포트 결과 확인 중...');
 
-      // 1. 서버(Notion)에서 최신 리포트 확인
+      // 1. GitHub 폴링 중 확인된 리포트 ID가 있으면 바로 이동
+      if (latestReportId) {
+        addLog(`[System] 최신 리포트로 이동합니다.`);
+        router.push(`/report/${latestReportId}`);
+        return;
+      }
+
+      // 2. 서버(Notion)에서 최신 리포트 확인
       let serverLatestId = null;
-      let isServerLatestRecent = false;
 
       try {
         const res = await fetch('/api/history/list', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
-            const latest = data[0];
-            const reportDate = new Date(latest.date);
-            const now = new Date();
-
-            // 유효한 날짜인지 확인
-            if (!isNaN(reportDate.getTime())) {
-              // 차이 계산 (분 단위)
-              const diffMinutes = (now.getTime() - reportDate.getTime()) / (1000 * 60);
-
-              // 10분 이내에 생성된 리포트만 유효한 것으로 간주
-              if (diffMinutes >= 0 && diffMinutes < 10) {
-                serverLatestId = latest.id;
-                isServerLatestRecent = true;
-              } else {
-                console.log(`[System] 서버 최신 리포트가 오래됨 (${Math.round(diffMinutes)}분 전). 무시합니다.`);
-              }
-            }
+            serverLatestId = data[0].id;
           }
         }
       } catch (e) {
         console.error('Failed to fetch history:', e);
       }
 
-      // 서버에 최신 리포트가 있으면 이동
-      if (isServerLatestRecent && serverLatestId) {
+      // 서버에 리포트가 있으면 이동
+      if (serverLatestId) {
         addLog(`[System] 최신 리포트로 이동합니다.`);
         router.push(`/report/${serverLatestId}`);
         return;
