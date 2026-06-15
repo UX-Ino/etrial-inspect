@@ -5,7 +5,6 @@ import * as path from 'path';
 import koLocale from 'axe-core/locales/ko.json';
 import { getBrowserLaunchOptions } from './browser-utils';
 import { convertAxeToKWCAG, KWCAGViolation } from './kwcag-mapping';
-import { CUSTOM_RULE_SCRIPT } from './custom-rules';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -159,29 +158,91 @@ export class AccessibilityAuditor {
       }
 
       // koLocale 설정 주입
-      const axeSource = axeCoreSource
+      let axeSource = axeCoreSource
         ? `${axeCoreSource}\n window.axe.configure({ locale: ${JSON.stringify(koLocale)} });`
-        : undefined;
+        : '';
 
-      const builder = new AxeBuilder({ page, axeSource });
+      // 커스텀 룰셋 로드 및 주입
+      let customRulesPath = path.join(process.cwd(), 'src', 'lib', 'kwcag22-axe-custom-rules.json');
+      if (!fs.existsSync(customRulesPath)) {
+        customRulesPath = path.join(__dirname, 'kwcag22-axe-custom-rules.json');
+      }
+      if (!fs.existsSync(customRulesPath)) {
+        customRulesPath = path.join(__dirname, '../lib/kwcag22-axe-custom-rules.json');
+      }
+
+      let customRulesData = { rules: [] };
+      try {
+        if (fs.existsSync(customRulesPath)) {
+          customRulesData = JSON.parse(fs.readFileSync(customRulesPath, 'utf8'));
+        } else {
+          console.warn('[Auditor] Custom rules file not found, checked paths include:', customRulesPath);
+        }
+      } catch (e) {
+        console.error('[Auditor] Failed to load custom rules json:', e);
+      }
+
+      if (customRulesData.rules && customRulesData.rules.length > 0) {
+        const customRulesConfigScript = `
+          (function() {
+            try {
+              const rawData = ${JSON.stringify(customRulesData)};
+              const axeRules = [];
+              const axeChecks = [];
+
+              for (const rule of rawData.rules) {
+                axeRules.push({
+                  id: rule.id,
+                  selector: rule.selector,
+                  enabled: rule.enabled,
+                  tags: rule.tags,
+                  any: rule.any || [],
+                  all: rule.all || [],
+                  none: rule.none || []
+                });
+
+                if (rule.checks) {
+                  for (const check of rule.checks) {
+                    let evalFunc;
+                    try {
+                      evalFunc = (new Function('return ' + check.evaluate))();
+                    } catch (err) {
+                      console.error('Failed to parse evaluate function for check:', check.id, err);
+                      continue;
+                    }
+
+                    axeChecks.push({
+                      id: check.id,
+                      evaluate: evalFunc,
+                      metadata: {
+                        impact: check.impact,
+                        messages: check.messages
+                      }
+                    });
+                  }
+                }
+              }
+
+              window.axe.configure({
+                rules: axeRules,
+                checks: axeChecks
+              });
+              console.log('[Auditor] Custom axe rules configured successfully. Total rules:', axeRules.length);
+            } catch (e) {
+              console.error('[Auditor] Failed to configure custom axe rules:', e);
+            }
+          })();
+        `;
+        if (axeSource) {
+          axeSource = axeSource + '\n' + customRulesConfigScript;
+        }
+      }
+
+      const builder = new AxeBuilder({ page, axeSource: axeSource || undefined });
 
       const axeResults = await builder
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'kwcag2.2'])
         .analyze();
-
-      // [NEW] Custom Rules Execution
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let customViolations: any[] = [];
-      try {
-        customViolations = await page.evaluate(CUSTOM_RULE_SCRIPT);
-      } catch (e) {
-        console.error('Failed to execute custom rules:', e);
-      }
-
-      // Merge custom violations into axe results
-      if (customViolations.length > 0) {
-        axeResults.violations.push(...customViolations);
-      }
 
       // 2. Bounding Box 추출 및 주입
       for (const violation of axeResults.violations) {
@@ -326,7 +387,7 @@ export class AccessibilityAuditor {
 
             const axeResults = await new AxeBuilder({ page, axeSource })
               .include('.modal, .layer-popup, .dropdown-menu, [role="dialog"]')
-              .withTags(['wcag2a', 'wcag2aa'])
+              .withTags(['wcag2a', 'wcag2aa', 'kwcag2.2'])
               .analyze();
 
             additionalViolations.push(...axeResults.violations);

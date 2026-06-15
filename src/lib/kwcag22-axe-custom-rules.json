@@ -1,0 +1,971 @@
+{
+  "meta": {
+    "title": "KWCAG 2.2 맞춤형 axe-core 커스텀 룰셋",
+    "description": "롯데잇츠 웹 접근성 점검 결과 시트 기반 커스텀 룰셋 (G/H열 검사항목 기준)",
+    "standard": "KWCAG 2.2",
+    "version": "1.0.0",
+    "createdAt": "2026-06-15"
+  },
+  "rules": [
+    {
+      "id": "kwcag-1-image-alt",
+      "kwcag": { "no": 1, "name": "적절한 대체 텍스트 제공", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "이미지, 아이콘 버튼, 링크 등 비텍스트 콘텐츠에 적절한 대체 텍스트(alt, aria-label 등)를 제공해야 합니다.",
+      "help": "비텍스트 콘텐츠에 대체 텍스트를 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-1", "wcag111", "cat.text-alternatives"],
+      "enabled": true,
+      "selector": "img, [role='img'], input[type='image'], area",
+      "checks": [
+        {
+          "id": "kwcag-1-img-alt-check",
+          "evaluate": "function(node, options, virtualNode, context) { const alt = node.getAttribute('alt'); const ariaLabel = node.getAttribute('aria-label'); const ariaLabelledby = node.getAttribute('aria-labelledby'); if (node.tagName === 'IMG') { if (alt === null) { this.data({ message: 'alt 속성이 없습니다.' }); return false; } if (alt.trim() === '' && !ariaLabel && !ariaLabelledby) { if (node.closest('a, button')) { this.data({ message: '링크/버튼 내 이미지에 대체 텍스트가 없습니다.' }); return false; } return true; } } if (!alt && !ariaLabel && !ariaLabelledby) { this.data({ message: '대체 텍스트가 없습니다.' }); return false; } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "대체 텍스트가 적절히 제공되었습니다.",
+            "fail": "대체 텍스트가 없거나 부적절합니다."
+          }
+        },
+        {
+          "id": "kwcag-1-btn-alt-check",
+          "evaluate": "function(node, options, virtualNode, context) { const ariaLabel = node.getAttribute('aria-label'); const ariaLabelledby = node.getAttribute('aria-labelledby'); const title = node.getAttribute('title'); const textContent = node.textContent.trim(); const hasImg = node.querySelector('img'); if (hasImg) { const imgAlt = hasImg.getAttribute('alt'); if (!imgAlt && !ariaLabel && !ariaLabelledby && !textContent) { this.data({ message: '아이콘 버튼/링크에 대체 텍스트가 없습니다.' }); return false; } } if (!textContent && !ariaLabel && !ariaLabelledby && !title) { this.data({ message: '버튼/링크에 접근 가능한 이름이 없습니다.' }); return false; } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "버튼/링크에 접근 가능한 이름이 제공되었습니다.",
+            "fail": "버튼/링크에 접근 가능한 이름이 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-1-aria-expanded-check",
+          "evaluate": "function(node, options, virtualNode, context) { const controls = node.getAttribute('aria-controls'); const expanded = node.getAttribute('aria-expanded'); if (controls && expanded === null) { this.data({ message: 'aria-controls가 있는 버튼에 aria-expanded가 없습니다.' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "aria-expanded 상태가 제공되었습니다.",
+            "fail": "aria-expanded 상태 정보가 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-1-img-alt-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-2-caption",
+      "kwcag": { "no": 2, "name": "자막 제공", "category": "인식의 용이성", "subcategory": "멀티미디어 대체수단", "status": "draft", "statusLabel": "보완 예정 (수동체크 및 가이드용)" },
+      "description": "동영상, 음성 등 멀티미디어 콘텐츠에는 자막, 원고, 수어 등 대체 수단을 제공해야 합니다. (수동체크 권장)",
+      "help": "멀티미디어 콘텐츠에 자막 또는 대체 수단(원고)을 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-2", "wcag122", "cat.time-and-media", "kwcag-draft"],
+      "enabled": false,
+      "selector": "video, audio",
+      "checks": [
+        {
+          "id": "kwcag-2-caption-check",
+          "evaluate": "function(node,options,virtualNode,context){if(node.tagName==='VIDEO'){var track=node.querySelector('track[kind=\"captions\"],track[kind=\"subtitles\"]');if(!track){var desc=node.getAttribute('aria-describedby');var lbl=node.getAttribute('aria-label');if(!desc&&!lbl){this.data({message:'동영상에 자막 트랙이 없습니다.'});return false;}}}if(node.tagName==='AUDIO'){var desc2=node.getAttribute('aria-describedby');if(!desc2){this.data({message:'음성 콘텐츠에 원고 대체 수단이 없습니다.'});return false;}}return true;}",
+          "impact": "critical",
+          "messages": {
+            "pass": "멀티미디어 대체 수단이 제공되었습니다.",
+            "fail": "멀티미디어 대체 수단이 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-2-caption-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-3-table-structure",
+      "kwcag": { "no": 3, "name": "표의 구성", "category": "인식의 용이성", "subcategory": "적응성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "데이터 표는 th 제목 셀과 caption을 제공하고, 관계를 명확히 해야 합니다.",
+      "help": "표에 caption, th, scope 속성을 올바르게 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-3", "wcag131", "cat.tables", "kwcag-draft"],
+      "enabled": false,
+      "selector": "table",
+      "checks": [
+        {
+          "id": "kwcag-3-table-caption-check",
+          "evaluate": "function(node,options,virtualNode,context){var role=node.getAttribute('role');if(role==='presentation'||role==='none')return true;var tds=node.querySelectorAll('td');if(tds.length===0)return true;var caption=node.querySelector('caption');var summary=node.getAttribute('summary');var lbl=node.getAttribute('aria-label');var lblby=node.getAttribute('aria-labelledby');if(!caption&&!summary&&!lbl&&!lblby){this.data({message:'데이터 표에 제목(caption/aria-label)이 없습니다.'});return false;}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "표 제목이 제공되었습니다.",
+            "fail": "표 제목이 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-3-table-th-scope-check",
+          "evaluate": "function(node,options,virtualNode,context){var role=node.getAttribute('role');if(role==='presentation'||role==='none')return true;var tds=node.querySelectorAll('td');if(tds.length===0)return true;var ths=node.querySelectorAll('th');if(ths.length===0){this.data({message:'데이터 표에 <th> 제목 셀이 없습니다.'});return false;}var missing=false;ths.forEach(function(th){if(!th.getAttribute('scope')&&!th.getAttribute('id'))missing=true;});if(missing){this.data({message:'<th>에 scope 또는 id 속성이 없습니다.'});return false;}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "th와 scope 속성이 올바릅니다.",
+            "fail": "th 또는 scope 속성이 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-3-table-caption-check", "kwcag-3-table-th-scope-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-4-linear-structure",
+      "kwcag": { "no": 4, "name": "콘텐츠의 선형구조", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "콘텐츠는 논리적인 선형 순서로 제공되어야 하며, 시각적 순서와 DOM 순서가 일치해야 합니다.",
+      "help": "DOM 순서가 시각적 읽기 순서와 일치하도록 마크업하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-4", "wcag1311", "cat.structure"],
+      "enabled": true,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-4-tabindex-check",
+          "evaluate": "function(node, options, virtualNode, context) { const positiveTabindex = node.querySelectorAll('[tabindex]'); const violations = []; positiveTabindex.forEach(function(el) { const val = parseInt(el.getAttribute('tabindex'), 10); if (val > 0) { violations.push(el.tagName + '[tabindex=' + val + ']'); } }); if (violations.length > 0) { this.data({ message: '양수 tabindex가 있어 읽기 순서가 왜곡될 수 있습니다.', elements: violations }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "양수 tabindex가 없습니다.",
+            "fail": "양수 tabindex로 인해 선형 순서가 왜곡될 수 있습니다."
+          }
+        },
+        {
+          "id": "kwcag-4-slider-controls-order-check",
+          "evaluate": "function(node, options, virtualNode, context) { const swipers = node.querySelectorAll('.swiper, [class*=\"swiper\"]'); let hasIssue = false; swipers.forEach(function(swiper) { const controls = swiper.querySelector('.swiper-button-prev, .swiper-button-next, .swiper-pagination, [class*=\"swiper-btn\"]'); const slides = swiper.querySelector('.swiper-wrapper, .swiper-slide'); if (controls && slides) { const controlsIndex = Array.prototype.indexOf.call(swiper.children, controls.parentElement || controls); const slidesIndex = Array.prototype.indexOf.call(swiper.children, slides.parentElement || slides); if (controlsIndex > slidesIndex) { hasIssue = true; } } }); if (hasIssue) { this.data({ message: '스와이퍼 제어 요소가 슬라이드 항목보다 뒤에 위치합니다.' }); return false; } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "슬라이더 제어 요소가 슬라이드 항목 앞에 위치합니다.",
+            "fail": "슬라이더 제어 요소가 슬라이드 항목 뒤에 위치합니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-4-tabindex-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-5-clear-instructions",
+      "kwcag": { "no": 5, "name": "명확한 지시사항 제공", "category": "인식의 용이성", "subcategory": "적응성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "색상, 모양, 위치 등 감각적 특성만으로 콘텐츠를 지시하지 않아야 하며, 텍스트로도 명확히 안내해야 합니다.",
+      "help": "색상이나 모양만으로 지시하지 말고 텍스트로도 명확히 안내하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-5", "wcag131", "cat.sensory", "kwcag-draft"],
+      "enabled": false,
+      "selector": "p, span, label, li, td",
+      "checks": [
+        {
+          "id": "kwcag-5-sensory-check",
+          "evaluate": "function(node,options,virtualNode,context){var text=node.textContent||'';var patterns=[/빨간.*(버튼|항목|글자)/,/파란.*(버튼|항목)/,/초록.*(버튼|항목)/,/별표.*만/,/동그라미.*만/];for(var i=0;i<patterns.length;i++){if(patterns[i].test(text)){this.data({message:'감각적 특성(색상/모양)만으로 지시하는 텍스트가 있습니다.'});return false;}}return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "감각적 특성만의 지시사항이 없습니다.",
+            "fail": "감각적 특성만으로 지시하는 내용이 있습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-5-sensory-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-6-color-independent",
+      "kwcag": { "no": 6, "name": "색에 무관한 콘텐츠 인식", "category": "인식의 용이성", "subcategory": "명료성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "색상만으로 정보를 전달하지 않고 텍스트, 패턴, 아이콘 등 추가 시각 수단을 함께 제공해야 합니다.",
+      "help": "색상 외에 텍스트나 패턴으로도 정보를 전달하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-6", "wcag141", "cat.color", "kwcag-draft"],
+      "enabled": false,
+      "selector": "input[required], [aria-required='true']",
+      "checks": [
+        {
+          "id": "kwcag-6-required-text-indicator-check",
+          "evaluate": "function(node,options,virtualNode,context){var id=node.getAttribute('id');var lbl=id?document.querySelector('label[for=\"'+id+'\"]'):null;var ariaLbl=node.getAttribute('aria-label')||'';var lblText=(lbl?lbl.textContent:'')+ariaLbl;var hasText=lblText.includes('필수')||lblText.includes('*')||lblText.includes('required');if(!hasText){this.data({message:'필수 입력 항목에 색상 외의 텍스트 표시(필수, * 등)가 없습니다.'});return false;}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "필수 항목에 색상 외 텍스트 표시가 있습니다.",
+            "fail": "필수 항목을 색상만으로 구분하고 있습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-6-required-text-indicator-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-7-auto-play-stop",
+      "kwcag": { "no": 7, "name": "자동 재생 금지", "category": "인식의 용이성", "subcategory": "명료성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "자동으로 재생되는 배경음이나 동영상은 3초 이내 멈추거나, 사용자가 정지·음소거할 수 있어야 합니다.",
+      "help": "자동 재생 미디어는 3초 내 자동 중지되거나 정지 수단을 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-7", "wcag142", "cat.time-and-media", "kwcag-draft"],
+      "enabled": false,
+      "selector": "audio[autoplay], video[autoplay]",
+      "checks": [
+        {
+          "id": "kwcag-7-autoplay-control-check",
+          "evaluate": "function(node,options,virtualNode,context){var muted=node.muted||node.hasAttribute('muted');var controls=node.hasAttribute('controls');if(!muted&&!controls){var stopBtn=document.querySelector('[aria-label*=\"정지\"],[aria-label*=\"음소거\"],[class*=\"stop\"],[class*=\"mute\"]');if(!stopBtn){this.data({message:'자동 재생 미디어에 정지/음소거 수단이 없습니다.'});return false;}}return true;}",
+          "impact": "critical",
+          "messages": {
+            "pass": "자동 재생 미디어에 정지 수단이 있습니다.",
+            "fail": "자동 재생 미디어에 정지/음소거 수단이 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-7-autoplay-control-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-8-color-contrast",
+      "kwcag": { "no": 8, "name": "텍스트 콘텐츠의 명도 대비", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "텍스트와 배경 간의 명도 대비가 최소 3:1 이상(권장 4.5:1 이상)이어야 합니다.",
+      "help": "텍스트 명도 대비 3:1 이상(권장 4.5:1)을 확보하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-8", "wcag143", "cat.color"],
+      "enabled": true,
+      "selector": "p, span, a, button, li, td, th, label, h1, h2, h3, h4, h5, h6",
+      "checks": [
+        {
+          "id": "kwcag-8-contrast-check",
+          "evaluate": "function(node, options, virtualNode, context) { const style = window.getComputedStyle(node); const color = style.color; const bg = style.backgroundColor; if (!color || !bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') { return true; } function parseColor(c) { const m = c.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/); return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : null; } function luminance(r, g, b) { const a = [r, g, b].map(function(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722; } const fg = parseColor(color); const bk = parseColor(bg); if (!fg || !bk) return true; const l1 = luminance(fg[0], fg[1], fg[2]); const l2 = luminance(bk[0], bk[1], bk[2]); const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); const fontSize = parseFloat(style.fontSize); const isBold = parseInt(style.fontWeight) >= 700; const isLarge = fontSize >= 18 || (isBold && fontSize >= 14); const minRatio = isLarge ? 3 : 4.5; if (ratio < 3) { this.data({ ratio: ratio.toFixed(2), required: minRatio, message: '명도 대비가 3:1 미만입니다.' }); return false; } if (ratio < minRatio) { this.data({ ratio: ratio.toFixed(2), required: minRatio, message: '명도 대비 ' + ratio.toFixed(2) + ':1 (권장 ' + minRatio + ':1)' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "텍스트 명도 대비가 기준을 충족합니다.",
+            "fail": "텍스트 명도 대비가 기준 미달입니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-8-contrast-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-9-content-separation",
+      "kwcag": { "no": 9, "name": "콘텐츠 간의 구분", "category": "인식의 용이성", "subcategory": "명료성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "이웃한 콘텐츠는 색상, 구분선, 여백 등 시각적 수단으로 명확히 구분되어야 합니다.",
+      "help": "인접 콘텐츠를 색상·구분선·여백 등으로 명확히 구분하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-9", "wcag141", "cat.visual", "kwcag-draft"],
+      "enabled": false,
+      "selector": "ul > li + li, ol > li + li",
+      "checks": [
+        {
+          "id": "kwcag-9-adjacent-content-check",
+          "evaluate": "function(node,options,virtualNode,context){var style=window.getComputedStyle(node);var border=style.borderTop;var margin=parseFloat(style.marginTop);var padding=parseFloat(style.paddingTop);var bg=style.backgroundColor;var prevStyle=window.getComputedStyle(node.previousElementSibling||node);var prevBg=prevStyle.backgroundColor;if(bg===prevBg&&margin<2&&padding<2&&(!border||border.includes('none')||border.includes('0px'))){this.data({message:'인접 목록 항목 간 시각적 구분 수단(여백/구분선/배경색)이 없습니다.'});return false;}return true;}",
+          "impact": "minor",
+          "messages": {
+            "pass": "콘텐츠 간 구분이 있습니다.",
+            "fail": "인접 콘텐츠 간 시각적 구분이 불명확합니다."
+          }
+        }
+      ],
+      "impact": "minor",
+      "any": ["kwcag-9-adjacent-content-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-10-keyboard-access",
+      "kwcag": { "no": 10, "name": "키보드 사용 보장", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "모든 기능은 키보드만으로 사용할 수 있어야 하며, href 없는 <a> 태그 등 키보드로 접근 불가한 요소가 없어야 합니다.",
+      "help": "키보드로 접근 불가한 인터랙티브 요소를 수정하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-10", "wcag211", "cat.keyboard"],
+      "enabled": true,
+      "selector": "a, [onclick], [class*='btn'], [class*='button']",
+      "checks": [
+        {
+          "id": "kwcag-10-anchor-href-check",
+          "evaluate": "function(node, options, virtualNode, context) { if (node.tagName === 'A') { const href = node.getAttribute('href'); const role = node.getAttribute('role'); const tabindex = node.getAttribute('tabindex'); if (!href && role !== 'button' && tabindex === null) { this.data({ message: 'href 없는 <a> 태그는 키보드로 접근할 수 없습니다.' }); return false; } } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "링크에 href가 제공되었습니다.",
+            "fail": "href 없는 링크는 키보드로 접근할 수 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-10-clickable-not-focusable-check",
+          "evaluate": "function(node, options, virtualNode, context) { const tag = node.tagName.toLowerCase(); const role = node.getAttribute('role'); const tabindex = node.getAttribute('tabindex'); const isNativelyFocusable = ['a', 'button', 'input', 'select', 'textarea'].includes(tag); const isAriaInteractive = ['button', 'link', 'menuitem', 'tab', 'checkbox', 'radio'].includes(role); if (!isNativelyFocusable && !isAriaInteractive && tabindex === null) { this.data({ message: '클릭 이벤트가 있지만 키보드로 포커스할 수 없는 요소입니다.' }); return false; } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "키보드로 접근 가능합니다.",
+            "fail": "클릭 이벤트가 있지만 키보드로 접근할 수 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-10-anchor-href-check", "kwcag-10-clickable-not-focusable-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-11-focus",
+      "kwcag": { "no": 11, "name": "초점 이동과 표시", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "키보드 초점은 논리적 순서로 이동해야 하고, 초점이 화면에 보여야 하며, 모달 열림/닫힘 시 초점이 올바르게 이동해야 합니다.",
+      "help": "초점이 가시적으로 표시되고 논리적으로 이동하는지 확인하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-11", "wcag241", "wcag247", "cat.keyboard"],
+      "enabled": true,
+      "selector": "a, button, input, select, textarea, [tabindex], [role='button'], [role='link'], [role='tab']",
+      "checks": [
+        {
+          "id": "kwcag-11-focus-visible-check",
+          "evaluate": "function(node, options, virtualNode, context) { const style = window.getComputedStyle(node, ':focus'); const outlineWidth = style.outlineWidth; const outlineStyle = style.outlineStyle; const boxShadow = style.boxShadow; if ((outlineWidth === '0px' || outlineStyle === 'none') && (!boxShadow || boxShadow === 'none')) { const focusStyle = window.getComputedStyle(node); if (focusStyle.outline === 'none' || focusStyle.outlineWidth === '0px') { this.data({ message: '초점(아웃라인)이 제공되지 않았습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "초점이 가시적으로 표시됩니다.",
+            "fail": "초점(아웃라인)이 제공되지 않았습니다."
+          }
+        },
+        {
+          "id": "kwcag-11-hidden-slide-focusable-check",
+          "evaluate": "function(node, options, virtualNode, context) { const swiperSlide = node.closest('.swiper-slide'); if (swiperSlide) { const ariaHidden = swiperSlide.getAttribute('aria-hidden'); const tabindex = node.getAttribute('tabindex'); if (ariaHidden === 'true' && tabindex !== '-1') { this.data({ message: '숨겨진 슬라이드 항목 내 포커스 가능한 요소에 tabindex=\"-1\"이 없습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "숨겨진 슬라이드 항목에 tabindex=\"-1\"이 적용되었습니다.",
+            "fail": "숨겨진 슬라이드 항목에 포커스가 이동할 수 있습니다."
+          }
+        },
+        {
+          "id": "kwcag-11-modal-focus-trap-check",
+          "evaluate": "function(node, options, virtualNode, context) { const isModal = node.getAttribute('role') === 'dialog' || node.getAttribute('aria-modal') === 'true'; if (!isModal) return true; const focusables = node.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])'); if (focusables.length === 0) { this.data({ message: '대화상자 내에 포커스 가능한 요소가 없습니다.' }); return false; } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "대화상자 내 초점 이동이 올바르게 구성되었습니다.",
+            "fail": "대화상자 내에 포커스 가능한 요소가 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-11-focus-visible-check", "kwcag-11-hidden-slide-focusable-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-12-touch-size",
+      "kwcag": { "no": 12, "name": "조작 가능", "category": "운용의 용이성", "subcategory": "입력장치 접근성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "터치 기반 환경에서 모든 인터랙티브 요소의 크기는 최소 44×44 CSS 픽셀 이상이어야 합니다.",
+      "help": "터치 대상 크기를 최소 44×44px 이상으로 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-12", "wcag255", "cat.pointer", "kwcag-draft"],
+      "enabled": false,
+      "selector": "button, a, input[type='checkbox'], input[type='radio'], [role='button'], [role='tab']",
+      "checks": [
+        {
+          "id": "kwcag-12-touch-target-size-check",
+          "evaluate": "function(node,options,virtualNode,context){var rect=node.getBoundingClientRect();if(rect.width===0&&rect.height===0)return true;var min=44;if(rect.width<min||rect.height<min){this.data({message:'터치 대상 크기가 '+Math.round(rect.width)+'x'+Math.round(rect.height)+'px로 최소 44x44px 미만입니다.'});return false;}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "터치 대상 크기가 44×44px 이상입니다.",
+            "fail": "터치 대상 크기가 44×44px 미만입니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-12-touch-target-size-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-13-character-shortcut",
+      "kwcag": { "no": 13, "name": "문자 단축키", "category": "운용의 용이성", "subcategory": "입력장치 접근성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "문자, 숫자, 기호 단독으로 이루어진 키보드 단축키는 비활성화하거나 재설정할 수 있어야 합니다.",
+      "help": "단일 문자 키보드 단축키는 비활성화 또는 재설정 수단을 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-13", "wcag214", "cat.keyboard", "kwcag-draft"],
+      "enabled": false,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-13-single-char-shortcut-check",
+          "evaluate": "function(node,options,virtualNode,context){var els=document.querySelectorAll('[accesskey]');var singles=[];els.forEach(function(el){var k=el.getAttribute('accesskey');if(k&&k.length===1)singles.push(k);});if(singles.length>0){this.data({message:'단일 문자 accesskey가 있습니다: '+singles.join(', ')});return false;}return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "단일 문자 단축키가 없습니다.",
+            "fail": "단일 문자 accesskey 단축키가 있습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-13-single-char-shortcut-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-14-response-time",
+      "kwcag": { "no": 14, "name": "응답시간 조절", "category": "운용의 용이성", "subcategory": "충분한 시간 제공", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "시간 제한이 있는 콘텐츠는 사용자가 해당 시간을 조절하거나 연장할 수 있어야 합니다.",
+      "help": "시간 제한 콘텐츠에 시간 조절 또는 연장 수단을 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-14", "wcag221", "cat.time-and-media", "kwcag-draft"],
+      "enabled": false,
+      "selector": "html",
+      "checks": [
+        {
+          "id": "kwcag-14-meta-refresh-check",
+          "evaluate": "function(node,options,virtualNode,context){var meta=document.querySelector('meta[http-equiv=\"refresh\"]');if(meta){var content=meta.getAttribute('content')||'';var m=content.match(/^(\\d+)/);if(m){var sec=parseInt(m[1],10);if(sec>0&&sec<72000){var ext=document.querySelector('[aria-label*=\"연장\"],[class*=\"extend\"],[class*=\"session-extend\"]');if(!ext){this.data({message:'meta refresh('+sec+'초)가 있지만 시간 연장 수단이 없습니다.'});return false;}}}}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "시간 제한 조절 수단이 있습니다.",
+            "fail": "시간 제한이 있지만 조절/연장 수단이 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-14-meta-refresh-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-15-auto-play-control",
+      "kwcag": { "no": 15, "name": "정지 기능 제공", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "자동으로 변경되는 콘텐츠(자동 재생 슬라이더 등)에는 일시 정지/재생 버튼을 제공해야 합니다.",
+      "help": "자동 재생 콘텐츠에 정지 버튼을 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-15", "wcag222", "cat.time-and-media"],
+      "enabled": true,
+      "selector": ".swiper, [class*='swiper'], [class*='slider'], [class*='carousel'], [class*='auto-play']",
+      "checks": [
+        {
+          "id": "kwcag-15-autoplay-pause-btn-check",
+          "evaluate": "function(node, options, virtualNode, context) { const swiperJs = node.swiper; if (swiperJs && !swiperJs.params.autoplay) return true; const hasAutoplayClass = node.querySelector('[class*=\"autoplay\"], [class*=\"auto-play\"]'); const pauseBtn = node.querySelector('[class*=\"pause\"], [class*=\"stop\"], [aria-label*=\"일시정지\"], [aria-label*=\"정지\"], [aria-label*=\"재생\"], [title*=\"일시정지\"], [title*=\"정지\"]'); if (hasAutoplayClass && !pauseBtn) { const parentPauseBtn = node.parentElement && node.parentElement.querySelector('[class*=\"pause\"], [aria-label*=\"일시정지\"]'); if (!parentPauseBtn) { this.data({ message: '자동 재생 슬라이더에 일시 정지 버튼이 없습니다.' }); return false; } } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "자동 재생 제어 버튼이 제공되었습니다.",
+            "fail": "자동 재생 슬라이더에 일시 정지 버튼이 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-15-autoplay-pause-btn-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-16-flicker",
+      "kwcag": { "no": 16, "name": "깜빡임과 번쩍임 사용 제한", "category": "운용의 용이성", "subcategory": "광과민성 발작 예방", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "1초에 3~50회 사이로 깜빡이거나 번쩍이는 콘텐츠를 제공하지 않아야 합니다.",
+      "help": "초당 3~50회 깜빡이는 콘텐츠를 사용하지 마세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-16", "wcag231", "cat.visual", "kwcag-draft"],
+      "enabled": false,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-16-blink-element-check",
+          "evaluate": "function(node,options,virtualNode,context){var blinks=document.querySelectorAll('[class*=\"blink\"],[class*=\"flash\"],[class*=\"flicker\"],blink,marquee');if(blinks.length>0){this.data({message:'blink/flash 관련 요소 또는 클래스가 감지되었습니다.'});return false;}var anims=document.querySelectorAll('[style*=\"animation\"]');var risky=false;anims.forEach(function(el){var s=window.getComputedStyle(el);var dur=parseFloat(s.animationDuration);if(dur>0&&dur<0.33)risky=true;});if(risky){this.data({message:'빠른 애니메이션(0.33초 미만 반복)이 있어 깜빡임 위험이 있습니다.'});return false;}return true;}",
+          "impact": "critical",
+          "messages": {
+            "pass": "위험한 깜빡임 요소가 없습니다.",
+            "fail": "깜빡임/번쩍임 위험 요소가 있습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-16-blink-element-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-17-skip-nav",
+      "kwcag": { "no": 17, "name": "반복 영역 건너뛰기", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "반복되는 헤더, GNB 등을 건너뛰고 본문으로 이동할 수 있는 '본문 바로가기' 링크를 페이지 최상단에 제공해야 합니다.",
+      "help": "페이지 상단에 본문 바로가기 링크를 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-17", "wcag241", "cat.keyboard"],
+      "enabled": true,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-17-skip-link-check",
+          "evaluate": "function(node, options, virtualNode, context) { const links = document.querySelectorAll('a'); let hasSkipLink = false; for (let i = 0; i < Math.min(links.length, 5); i++) { const href = links[i].getAttribute('href') || ''; const text = links[i].textContent.trim(); if ((href.startsWith('#') && (text.includes('바로가기') || text.includes('본문') || text.includes('skip') || text.includes('건너뛰기'))) || links[i].classList.contains('skip') || links[i].id === 'skip') { hasSkipLink = true; break; } } if (!hasSkipLink) { this.data({ message: '본문 바로가기 링크가 없습니다.' }); return false; } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "본문 바로가기 링크가 제공되었습니다.",
+            "fail": "본문 바로가기 링크가 없습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-17-skip-link-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-18-page-title",
+      "kwcag": { "no": 18, "name": "제목 제공", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "페이지마다 고유한 제목(<title>)을 제공해야 하며, 콘텐츠 블록의 제목 태그(h1~h6)는 논리적인 계층 구조를 가져야 합니다.",
+      "help": "페이지 제목과 제목 태그 계층 구조를 올바르게 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-18", "wcag242", "wcag246", "cat.structure"],
+      "enabled": true,
+      "selector": "html",
+      "checks": [
+        {
+          "id": "kwcag-18-document-title-check",
+          "evaluate": "function(node, options, virtualNode, context) { const title = document.title; if (!title || title.trim() === '') { this.data({ message: '페이지 타이틀(<title>)이 없습니다.' }); return false; } if (title.trim().length < 2) { this.data({ message: '페이지 타이틀이 너무 짧습니다: \"' + title + '\"' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "페이지 타이틀이 제공되었습니다.",
+            "fail": "페이지 타이틀이 없거나 부적절합니다."
+          }
+        },
+        {
+          "id": "kwcag-18-heading-hierarchy-check",
+          "evaluate": "function(node, options, virtualNode, context) { const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(function(h) { return !h.closest('[aria-hidden=\"true\"]') && window.getComputedStyle(h).display !== 'none'; }); if (headings.length === 0) { this.data({ message: '페이지에 제목 태그가 없습니다.' }); return false; } let prevLevel = 0; let hasSkip = false; for (let i = 0; i < headings.length; i++) { const level = parseInt(headings[i].tagName[1], 10); if (prevLevel > 0 && level > prevLevel + 1) { hasSkip = true; this.data({ message: 'h' + prevLevel + ' 다음 h' + level + ' 사용으로 제목 계층이 건너뛰어졌습니다.' }); break; } prevLevel = level; } return !hasSkip; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "제목 태그 계층 구조가 올바릅니다.",
+            "fail": "제목 태그 계층 구조가 올바르지 않습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-18-document-title-check", "kwcag-18-heading-hierarchy-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-19-link-text",
+      "kwcag": { "no": 19, "name": "적절한 링크 텍스트", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "링크 텍스트는 링크의 목적과 기능을 명확히 나타내야 하며, '여기', '클릭' 등 불명확한 텍스트를 사용하지 않아야 합니다.",
+      "help": "링크 텍스트가 링크 목적을 명확히 설명하는지 확인하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-19", "wcag244", "cat.links"],
+      "enabled": true,
+      "selector": "a[href]",
+      "checks": [
+        {
+          "id": "kwcag-19-link-text-check",
+          "evaluate": "function(node, options, virtualNode, context) { const vague = ['여기', '클릭', '바로가기', '더보기', '보기', '링크', 'click here', 'here', 'more', 'read more']; const ariaLabel = node.getAttribute('aria-label') || ''; const title = node.getAttribute('title') || ''; const text = (node.textContent || '').trim(); const accessible = (ariaLabel || title || text).trim(); if (!accessible) { this.data({ message: '링크 텍스트가 없습니다.' }); return false; } if (vague.some(function(v) { return accessible.toLowerCase() === v; })) { this.data({ message: '링크 텍스트가 불명확합니다: \"' + accessible + '\"' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "링크 텍스트가 적절합니다.",
+            "fail": "링크 텍스트가 없거나 불명확합니다."
+          }
+        },
+        {
+          "id": "kwcag-19-new-window-notice-check",
+          "evaluate": "function(node, options, virtualNode, context) { const target = node.getAttribute('target'); if (target === '_blank') { const title = node.getAttribute('title') || ''; const ariaLabel = node.getAttribute('aria-label') || ''; const notice = title + ariaLabel; if (!notice.includes('새창') && !notice.includes('새 창') && !notice.includes('팝업') && !notice.includes('새탭')) { this.data({ message: '새 창으로 열리는 링크에 새 창 열림 안내가 없습니다.' }); return false; } } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "새 창 열림 안내가 제공되었습니다.",
+            "fail": "새 창으로 열리는 링크에 새 창 열림 안내가 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-19-link-text-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-20-fixed-reference",
+      "kwcag": { "no": 20, "name": "고정된 참조 위치 정보", "category": "운용의 용이성", "subcategory": "쉬운 내비게이션", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "페이지로 구분된 콘텐츠는 고정된 페이지 번호나 위치 정보를 제공해야 합니다.",
+      "help": "페이지네이션에 현재 페이지 위치(aria-current='page')를 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-20", "wcag2412", "cat.structure", "kwcag-draft"],
+      "enabled": false,
+      "selector": ".pagination, [class*='pagination'], [class*='paging'], [role='navigation'][aria-label*='페이지']",
+      "checks": [
+        {
+          "id": "kwcag-20-current-page-check",
+          "evaluate": "function(node,options,virtualNode,context){var current=node.querySelector('[aria-current=\"page\"]');if(!current){var active=node.querySelector('.active,[class*=\"active\"],[class*=\"current\"]');if(!active){this.data({message:'페이지네이션에 현재 페이지 aria-current=\"page\" 표시가 없습니다.'});return false;}}return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "현재 페이지 위치 정보가 제공되었습니다.",
+            "fail": "페이지네이션에 현재 위치 정보가 없습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-20-current-page-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-21-single-pointer",
+      "kwcag": { "no": 21, "name": "단일 포인터 입력 지원", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "경로 기반 입력(드래그, 스와이프)에 의존하는 기능은 단일 포인터(탭/클릭)로도 조작 가능한 대체 수단을 제공해야 합니다.",
+      "help": "스와이퍼 등 드래그 기반 UI에 제어 버튼(이전/다음)을 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-21", "wcag251", "cat.pointer"],
+      "enabled": true,
+      "selector": ".swiper, [class*='swiper'], [class*='slider'], [class*='carousel']",
+      "checks": [
+        {
+          "id": "kwcag-21-swiper-control-check",
+          "evaluate": "function(node, options, virtualNode, context) { const prevBtn = node.querySelector('.swiper-button-prev, [aria-label*=\"이전\"], [aria-label*=\"prev\"]'); const nextBtn = node.querySelector('.swiper-button-next, [aria-label*=\"다음\"], [aria-label*=\"next\"]'); const pagination = node.querySelector('.swiper-pagination button, .swiper-pagination [role=\"button\"]'); const hasFreeMode = node.classList.contains('swiper-free-mode') || node.querySelector('[class*=\"free\"]'); if (hasFreeMode) return true; if (!prevBtn && !nextBtn && !pagination) { this.data({ message: '슬라이더에 단일 포인터 입력 제어 요소(이전/다음 버튼 또는 페이지네이션)가 없습니다.' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "슬라이더에 단일 포인터 입력 제어 요소가 있습니다.",
+            "fail": "슬라이더에 단일 포인터 입력 제어 요소가 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-21-swiper-control-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-22-pointer-cancellation",
+      "kwcag": { "no": 22, "name": "포인터 입력 취소", "category": "운용의 용이성", "subcategory": "입력 방식", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "단일 포인터 입력 기능은 mousedown/touchstart가 아닌 mouseup/click/touchend에서 실행되어야 합니다.",
+      "help": "포인터 기능은 down 이벤트가 아닌 up 이벤트에서 실행하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-22", "wcag252", "cat.pointer", "kwcag-draft"],
+      "enabled": false,
+      "selector": "button, a, [role='button']",
+      "checks": [
+        {
+          "id": "kwcag-22-down-event-check",
+          "evaluate": "function(node,options,virtualNode,context){var md=node.getAttribute('onmousedown');var ts=node.getAttribute('ontouchstart');if(md&&md.trim()!==''){this.data({message:'onmousedown 인라인 이벤트가 있습니다. click 또는 mouseup으로 변경하세요.'});return false;}if(ts&&ts.trim()!==''){this.data({message:'ontouchstart 인라인 이벤트가 있습니다. touchend 또는 click으로 변경하세요.'});return false;}return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "down 이벤트만으로 실행되는 기능이 없습니다.",
+            "fail": "mousedown/touchstart 이벤트만으로 기능이 실행됩니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-22-down-event-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-23-label-name",
+      "kwcag": { "no": 23, "name": "레이블과 네임", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "텍스트가 포함된 UI 컴포넌트의 접근 가능한 이름(aria-label 등)은 시각적으로 표시된 텍스트(레이블)를 포함해야 합니다.",
+      "help": "버튼/링크의 aria-label이 화면에 보이는 텍스트를 포함하는지 확인하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-23", "wcag253", "cat.forms"],
+      "enabled": true,
+      "selector": "button, a, [role='button'], [role='link'], input[type='button'], input[type='submit']",
+      "checks": [
+        {
+          "id": "kwcag-23-label-name-match-check",
+          "evaluate": "function(node, options, virtualNode, context) { const ariaLabel = (node.getAttribute('aria-label') || '').trim(); const visibleText = (node.textContent || '').trim().replace(/\\s+/g, ' '); if (ariaLabel && visibleText && visibleText.length > 0) { if (!ariaLabel.includes(visibleText) && !ariaLabel.toLowerCase().includes(visibleText.toLowerCase())) { this.data({ message: 'aria-label(\"' + ariaLabel + '\")이 화면 텍스트(\"' + visibleText + '\")를 포함하지 않습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "레이블과 네임이 일치합니다.",
+            "fail": "aria-label이 시각적 텍스트와 불일치합니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-23-label-name-match-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-24-motion-actuation",
+      "kwcag": { "no": 24, "name": "동작기반 작동", "category": "운용의 용이성", "subcategory": "입력 방식", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "기기의 움직임이나 사용자의 움직임으로 동작되는 기능은 단일 입력 등으로 조작 가능한 대체 수단을 제공해야 합니다.",
+      "help": "기기 동작이 필요한 기능에 대체 수단을 제공하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-24", "wcag254", "cat.pointer", "kwcag-draft"],
+      "enabled": false,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-24-motion-check",
+          "evaluate": "function(node,options,virtualNode,context){return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "동작기반 작동 기능에 대한 대체 수단 검사가 완료되었습니다. (수동 확인 필요)",
+            "fail": "동작기반 기능의 대체 입력 장치가 감지되지 않았습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-24-motion-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-25-language",
+      "kwcag": { "no": 25, "name": "기본 언어 표시", "category": "이해의 용이성", "subcategory": "가독성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "웹 페이지는 주로 사용하는 기본 언어를 명시해야 합니다.",
+      "help": "html 태그에 올바른 lang 속성을 정의하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-25", "wcag311", "cat.language", "kwcag-draft"],
+      "enabled": false,
+      "selector": "html",
+      "checks": [
+        {
+          "id": "kwcag-25-lang-check",
+          "evaluate": "function(node,options,virtualNode,context){var lang=node.getAttribute('lang');if(!lang||lang.trim()===''){this.data({message:'html 태그에 lang 속성이 누락되었습니다.'});return false;}return true;}",
+          "impact": "serious",
+          "messages": {
+            "pass": "html lang 속성이 제공되었습니다.",
+            "fail": "html lang 속성이 누락되었습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-25-lang-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-26-user-request-execution",
+      "kwcag": { "no": 26, "name": "사용자 요구에 따른 실행", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "새 창, 팝업 등 사용자 예측이 어려운 상황 변화가 발생하는 경우 사전에 안내해야 하며, 확장/축소 UI에는 aria-expanded 상태를 제공해야 합니다.",
+      "help": "새 창 열림 안내와 aria-expanded 상태를 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-26", "wcag321", "cat.forms"],
+      "enabled": true,
+      "selector": "a[target='_blank'], button[aria-controls], [role='button'][aria-controls]",
+      "checks": [
+        {
+          "id": "kwcag-26-new-window-check",
+          "evaluate": "function(node, options, virtualNode, context) { if (node.tagName === 'A' && node.getAttribute('target') === '_blank') { const title = node.getAttribute('title') || ''; const ariaLabel = node.getAttribute('aria-label') || ''; if (!title.includes('새창') && !title.includes('새 창') && !ariaLabel.includes('새창') && !ariaLabel.includes('새 창') && !title.includes('팝업') && !ariaLabel.includes('팝업')) { this.data({ message: '새 창으로 열리는 링크에 새 창 열림 안내가 없습니다.' }); return false; } } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "새 창 열림 안내가 제공되었습니다.",
+            "fail": "새 창으로 열리는 링크에 새 창 열림 안내가 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-26-aria-expanded-check",
+          "evaluate": "function(node, options, virtualNode, context) { const controls = node.getAttribute('aria-controls'); if (controls) { const expanded = node.getAttribute('aria-expanded'); if (expanded === null) { this.data({ message: 'aria-controls가 있는 버튼에 aria-expanded가 없습니다.' }); return false; } if (expanded !== 'true' && expanded !== 'false') { this.data({ message: 'aria-expanded 값이 true/false가 아닙니다: \"' + expanded + '\"' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "aria-expanded 상태가 올바르게 제공되었습니다.",
+            "fail": "aria-expanded 상태가 없거나 잘못되었습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-26-new-window-check", "kwcag-26-aria-expanded-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-27-linear-structure-understand",
+      "kwcag": { "no": 27, "name": "콘텐츠의 선형 구조", "category": "이해의 용이성", "subcategory": "예측 가능성", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "웹 페이지의 탭 순서 및 콘텐츠 배치는 논리적인 흐름으로 제공되어야 합니다.",
+      "help": "탭 이동 순서가 시각적 흐름과 일치하는지 점검하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-27", "wcag323", "cat.structure", "kwcag-draft"],
+      "enabled": false,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-27-tab-order-check",
+          "evaluate": "function(node,options,virtualNode,context){return true;}",
+          "impact": "medium",
+          "messages": {
+            "pass": "탭 논리 순서 검사가 완료되었습니다. (수동 키보드 확인 권장)",
+            "fail": "비논리적인 탭 포커스 순서가 감지되었습니다."
+          }
+        }
+      ],
+      "impact": "medium",
+      "any": ["kwcag-27-tab-order-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-28-error-correction",
+      "kwcag": { "no": 28, "name": "오류 정정", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "입력 오류 발생 시 오류가 발생한 항목을 인식할 수 있게 aria-invalid, aria-describedby 등으로 안내해야 합니다.",
+      "help": "입력 오류 시 aria-invalid와 aria-describedby로 오류 안내를 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-28", "wcag331", "wcag333", "cat.forms"],
+      "enabled": true,
+      "selector": "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']), textarea, select",
+      "checks": [
+        {
+          "id": "kwcag-28-error-indication-check",
+          "evaluate": "function(node, options, virtualNode, context) { const ariaInvalid = node.getAttribute('aria-invalid'); const ariaDescribedby = node.getAttribute('aria-describedby'); if (ariaInvalid === 'true') { if (!ariaDescribedby) { this.data({ message: 'aria-invalid=\"true\"이지만 aria-describedby로 오류 메시지가 연결되지 않았습니다.' }); return false; } const errorEl = document.getElementById(ariaDescribedby); if (!errorEl) { this.data({ message: 'aria-describedby=\"' + ariaDescribedby + '\"에 해당하는 요소가 없습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "오류 정정 안내가 적절히 제공되었습니다.",
+            "fail": "오류 상태이지만 스크린 리더용 오류 안내가 없습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-28-error-indication-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-29-label",
+      "kwcag": { "no": 29, "name": "레이블 제공", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "입력 서식에는 해당 입력 목적을 설명하는 레이블(<label>, aria-label, aria-labelledby 등)을 제공해야 합니다.",
+      "help": "모든 입력 서식에 레이블을 제공하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-29", "wcag332", "wcag131", "cat.forms"],
+      "enabled": true,
+      "selector": "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='image']), textarea, select",
+      "checks": [
+        {
+          "id": "kwcag-29-label-check",
+          "evaluate": "function(node, options, virtualNode, context) { const id = node.getAttribute('id'); const ariaLabel = node.getAttribute('aria-label'); const ariaLabelledby = node.getAttribute('aria-labelledby'); const title = node.getAttribute('title'); const placeholder = node.getAttribute('placeholder'); if (ariaLabel || title) return true; if (ariaLabelledby) { const el = document.getElementById(ariaLabelledby); if (el && el.textContent.trim()) return true; } if (id) { const label = document.querySelector('label[for=\"' + id + '\"]'); if (label && label.textContent.trim()) return true; } const parentLabel = node.closest('label'); if (parentLabel && parentLabel.textContent.trim()) return true; if (placeholder && !ariaLabel && !title) { this.data({ message: 'placeholder만으로는 레이블을 대체할 수 없습니다.' }); return false; } this.data({ message: '입력 서식에 레이블이 없습니다.' }); return false; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "입력 서식에 레이블이 제공되었습니다.",
+            "fail": "입력 서식에 레이블이 없습니다."
+          }
+        }
+      ],
+      "impact": "critical",
+      "any": ["kwcag-29-label-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-30-accessible-auth",
+      "kwcag": { "no": 30, "name": "접근 가능한 인증", "category": "이해의 용이성", "subcategory": "입력 도움", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "인증 과정은 비밀번호 기억, 계산 등 인지 기능에만 완전히 의존하지 않아야 합니다. (수동 점검 필요)",
+      "help": "계산식 입력 외의 대체 인증 방식(이메일, 일회용 비밀번호 등)을 지원하는지 확인하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-30", "wcag337", "cat.forms", "kwcag-draft"],
+      "enabled": false,
+      "selector": "form, body",
+      "checks": [
+        {
+          "id": "kwcag-30-auth-check",
+          "evaluate": "function(node,options,virtualNode,context){return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "인지 기능만을 요구하는 인증 수단인지 수동 점검이 완료되었습니다.",
+            "fail": "인지적 인증 수단만 제공되고 있습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-30-auth-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-31-redundant-entry",
+      "kwcag": { "no": 31, "name": "반복 입력 정보", "category": "이해의 용이성", "subcategory": "입력 도움", "status": "draft", "statusLabel": "보완 예정" },
+      "description": "동일 프로세스 내에서 이미 입력했던 정보는 다시 입력하도록 요구하지 않고 선택 또는 자동 기입 수단을 보장해야 합니다.",
+      "help": "이전 입력 항목에 대해 복사/선택 입력 기능을 지원하세요.",
+      "helpUrl": "https://www.wah.or.kr",
+      "tags": ["kwcag2.2", "kwcag-31", "wcag338", "cat.forms", "kwcag-draft"],
+      "enabled": false,
+      "selector": "form, body",
+      "checks": [
+        {
+          "id": "kwcag-31-redundant-check",
+          "evaluate": "function(node,options,virtualNode,context){return true;}",
+          "impact": "moderate",
+          "messages": {
+            "pass": "반복 입력 정보 자동화 및 편의성 검사를 마쳤습니다. (수동 확인)",
+            "fail": "이전 입력 정보를 다시 입력해야 합니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-31-redundant-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-32-markup-validity",
+      "kwcag": { "no": 32, "name": "마크업 오류 방지", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "랜드마크 역할(<nav>, <main>, role=\"main\" 등)을 올바르게 제공해야 하며, 중복 id, ARIA 속성 오류 등 마크업 오류가 없어야 합니다.",
+      "help": "랜드마크 역할과 ARIA 마크업 오류를 수정하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-32", "wcag411", "cat.parsing"],
+      "enabled": true,
+      "selector": "body",
+      "checks": [
+        {
+          "id": "kwcag-32-main-landmark-check",
+          "evaluate": "function(node, options, virtualNode, context) { const main = document.querySelector('main, [role=\"main\"]'); if (!main) { this.data({ message: 'main 랜드마크(<main> 또는 role=\"main\")가 없습니다.' }); return false; } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "main 랜드마크가 제공되었습니다.",
+            "fail": "main 랜드마크가 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-32-nav-landmark-check",
+          "evaluate": "function(node, options, virtualNode, context) { const navs = document.querySelectorAll('nav, [role=\"navigation\"]'); if (navs.length === 0) { this.data({ message: 'nav 랜드마크(<nav> 또는 role=\"navigation\")가 없습니다.' }); return false; } let missingLabel = false; navs.forEach(function(nav) { if (navs.length > 1) { const label = nav.getAttribute('aria-label') || nav.getAttribute('aria-labelledby'); if (!label) { missingLabel = true; } } }); if (missingLabel) { this.data({ message: '복수의 nav 랜드마크에 aria-label이 없어 구분이 불가합니다.' }); return false; } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "nav 랜드마크가 올바르게 제공되었습니다.",
+            "fail": "nav 랜드마크가 없거나 aria-label이 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-32-duplicate-id-check",
+          "evaluate": "function(node, options, virtualNode, context) { const allIds = Array.from(document.querySelectorAll('[id]')).map(function(el) { return el.id; }); const dupes = allIds.filter(function(id, index) { return allIds.indexOf(id) !== index; }); if (dupes.length > 0) { this.data({ message: '중복된 id가 있습니다: ' + [...new Set(dupes)].join(', ') }); return false; } return true; }",
+          "impact": "critical",
+          "messages": {
+            "pass": "중복된 id가 없습니다.",
+            "fail": "중복된 id가 있습니다."
+          }
+        }
+      ],
+      "impact": "moderate",
+      "any": ["kwcag-32-main-landmark-check", "kwcag-32-nav-landmark-check", "kwcag-32-duplicate-id-check"],
+      "all": [],
+      "none": []
+    },
+    {
+      "id": "kwcag-33-web-app-accessibility",
+      "kwcag": { "no": 33, "name": "웹 애플리케이션 접근성 준수", "status": "verified", "statusLabel": "검증됨 (시트 기반)" },
+      "description": "jQuery UI, Swiper.js 등 동적 위젯에 WAI-ARIA APG 패턴에 맞는 ARIA 속성을 올바르게 제공해야 합니다.",
+      "help": "동적 위젯(탭, 다이얼로그, 슬라이더 등)에 ARIA 속성을 올바르게 적용하세요.",
+      "helpUrl": "https://www.wa.or.kr/m1/sub1.asp",
+      "tags": ["kwcag2.2", "kwcag-33", "wcag412", "cat.aria"],
+      "enabled": true,
+      "selector": "[role='tablist'], [role='dialog'], [role='alertdialog'], .swiper, [class*='swiper']",
+      "checks": [
+        {
+          "id": "kwcag-33-tablist-check",
+          "evaluate": "function(node, options, virtualNode, context) { if (node.getAttribute('role') === 'tablist') { const tabs = node.querySelectorAll('[role=\"tab\"]'); if (tabs.length === 0) { this.data({ message: 'role=\"tablist\" 내에 role=\"tab\" 요소가 없습니다.' }); return false; } let hasIssue = false; tabs.forEach(function(tab) { const selected = tab.getAttribute('aria-selected'); if (selected === null) { hasIssue = true; } const controls = tab.getAttribute('aria-controls'); if (!controls) { hasIssue = true; } }); if (hasIssue) { this.data({ message: 'tab 요소에 aria-selected 또는 aria-controls가 없습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "탭 위젯 ARIA 속성이 올바릅니다.",
+            "fail": "탭 위젯 ARIA 속성이 불완전합니다."
+          }
+        },
+        {
+          "id": "kwcag-33-dialog-check",
+          "evaluate": "function(node, options, virtualNode, context) { const role = node.getAttribute('role'); if (role === 'dialog' || role === 'alertdialog') { const labelledby = node.getAttribute('aria-labelledby'); const label = node.getAttribute('aria-label'); if (!labelledby && !label) { this.data({ message: 'role=\"dialog\"에 aria-labelledby 또는 aria-label이 없습니다.' }); return false; } } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "다이얼로그에 접근 가능한 이름이 있습니다.",
+            "fail": "다이얼로그에 aria-labelledby 또는 aria-label이 없습니다."
+          }
+        },
+        {
+          "id": "kwcag-33-swiper-aria-live-check",
+          "evaluate": "function(node, options, virtualNode, context) { const wrapper = node.querySelector('.swiper-wrapper'); if (wrapper) { const ariaLive = wrapper.getAttribute('aria-live'); if (ariaLive && ariaLive !== 'off' && ariaLive !== 'polite') { this.data({ message: 'swiper-wrapper의 aria-live 값이 부적절합니다: \"' + ariaLive + '\"' }); return false; } } return true; }",
+          "impact": "moderate",
+          "messages": {
+            "pass": "Swiper aria-live 속성이 적절합니다.",
+            "fail": "Swiper aria-live 속성이 부적절합니다."
+          }
+        },
+        {
+          "id": "kwcag-33-swiper-hidden-slides-check",
+          "evaluate": "function(node, options, virtualNode, context) { const slides = node.querySelectorAll('.swiper-slide[aria-hidden=\"true\"]'); let hasIssue = false; slides.forEach(function(slide) { const focusables = slide.querySelectorAll('a[href], button, input, [tabindex]'); focusables.forEach(function(el) { if (el.getAttribute('tabindex') !== '-1') { hasIssue = true; } }); }); if (hasIssue) { this.data({ message: 'aria-hidden=\"true\" 슬라이드 내 포커스 가능 요소에 tabindex=\"-1\"이 없습니다.' }); return false; } return true; }",
+          "impact": "serious",
+          "messages": {
+            "pass": "숨겨진 슬라이드의 포커스 처리가 올바릅니다.",
+            "fail": "숨겨진 슬라이드에 포커스 이동이 발생할 수 있습니다."
+          }
+        }
+      ],
+      "impact": "serious",
+      "any": ["kwcag-33-tablist-check", "kwcag-33-dialog-check", "kwcag-33-swiper-aria-live-check", "kwcag-33-swiper-hidden-slides-check"],
+      "all": [],
+      "none": []
+    }
+  ]
+}
