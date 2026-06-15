@@ -77,7 +77,7 @@ export const CUSTOM_RULE_SCRIPT = `
         addViolation(
           'custom-aria-tab-invalid-controls',
           'Tab이 가리키는 콘텐츠 패널이 존재하지 않습니다.',
-          `ID "${targetId}"를 가진 요소가 DOM에 존재해야 합니다.`,
+          'ID "' + targetId + '"를 가진 요소가 DOM에 존재해야 합니다.',
           el,
           'Referenced aria-controls element not found'
         );
@@ -85,7 +85,7 @@ export const CUSTOM_RULE_SCRIPT = `
         addViolation(
           'custom-aria-tab-controls-role-mismatch',
           'Tab 연결 패널의 역할(role)이 올바르지 않습니다.',
-          `ID "${targetId}" 요소에 role="tabpanel"을 설정해야 합니다.`,
+          'ID "' + targetId + '" 요소에 role="tabpanel"을 설정해야 합니다.',
           el,
           'Referenced element is not role="tabpanel"'
         );
