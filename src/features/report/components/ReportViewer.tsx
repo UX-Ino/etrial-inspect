@@ -332,6 +332,11 @@ export const ReportViewer = ({ initialResult }: ReportViewerProps) => {
                       자세히 보기 →
                     </a>
                   )}
+                  {violation.axeHelp && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#ef4444', backgroundColor: '#fef2f2', padding: '0.6rem 0.8rem', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
+                      ⚙️ <strong>상세 오류 원인:</strong> {violation.axeHelp}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

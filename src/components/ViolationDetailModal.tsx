@@ -65,7 +65,7 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
   const [downloadError, setDownloadError] = useState(false);
 
   useEffect(() => {
-    if (artifactName && !hasScreenshot) {
+    if (showArtifactNote) {
       setIsLoadingArtifact(true);
       setDownloadError(false);
       // 스크린샷 파일명 추출 (경로에서)
@@ -86,7 +86,7 @@ export const ViolationDetailModal: React.FC<ViolationDetailModalProps> = ({
         })
         .finally(() => setIsLoadingArtifact(false));
     }
-  }, [artifactName, hasScreenshot, screenshotPath]);
+  }, [showArtifactNote, artifactName, screenshotPath]);
 
   // GitHub Actions Run ID 추출 (screenshots-12345678 -> 12345678)
   const runId = artifactName?.replace('screenshots-', '');

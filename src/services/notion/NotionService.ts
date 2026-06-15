@@ -223,12 +223,6 @@ export class NotionService {
           },
           'Report Link': {
             url: reportUrl || null,
-          },
-          'Artifact Name': {
-            rich_text: result.artifactName ? [{ text: { content: result.artifactName } }] : [],
-          },
-          'Screenshot URL': {
-            url: result.screenshotUrl || null,
           }
         },
         children: children.slice(0, 100), // First 100 blocks

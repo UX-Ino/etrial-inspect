@@ -29,6 +29,7 @@ export function useAudit(onHistoryRefresh?: () => void) {
     enableAICheck: true,
     platform: 'PC',
     inspector: '',
+    excludePaths: '',
   });
 
   const [progress, setProgress] = useState<ProgressState>({
@@ -307,7 +308,7 @@ export function useAudit(onHistoryRefresh?: () => void) {
       const response = await fetch('/api/github/dispatch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUrl: config.targetUrl }),
+        body: JSON.stringify({ targetUrl: config.targetUrl, excludePaths: config.excludePaths }),
       });
 
       const data = await response.json();

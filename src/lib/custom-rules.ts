@@ -69,6 +69,38 @@ export const CUSTOM_RULE_SCRIPT = `
         el,
         'aria-controls attribute is missing'
       );
+    } else {
+      // Tabpanel connection check
+      const targetId = el.getAttribute('aria-controls');
+      const targetEl = document.getElementById(targetId);
+      if (!targetEl) {
+        addViolation(
+          'custom-aria-tab-invalid-controls',
+          'Tab이 가리키는 콘텐츠 패널이 존재하지 않습니다.',
+          `ID "${targetId}"를 가진 요소가 DOM에 존재해야 합니다.`,
+          el,
+          'Referenced aria-controls element not found'
+        );
+      } else if (targetEl.getAttribute('role') !== 'tabpanel') {
+        addViolation(
+          'custom-aria-tab-controls-role-mismatch',
+          'Tab 연결 패널의 역할(role)이 올바르지 않습니다.',
+          `ID "${targetId}" 요소에 role="tabpanel"을 설정해야 합니다.`,
+          el,
+          'Referenced element is not role="tabpanel"'
+        );
+      }
+    }
+
+    // Tablist container check
+    if (!el.closest('[role="tablist"]')) {
+      addViolation(
+        'custom-aria-tab-missing-tablist',
+        'Tab 요소는 role="tablist" 내부에서 정의되어야 합니다.',
+        '탭 메뉴들을 감싸는 부모 컨테이너에 role="tablist"를 명시하세요.',
+        el,
+        'Missing role="tablist" ancestor'
+      );
     }
   });
 
@@ -129,6 +161,19 @@ export const CUSTOM_RULE_SCRIPT = `
           'Invalid aria-pressed value: ' + val
         );
       }
+    }
+  });
+
+  // Rule 6: Boilerplate hide-txt check
+  document.querySelectorAll('.hide-txt').forEach((el) => {
+    if (!el.textContent || !el.textContent.trim()) {
+      addViolation(
+        'custom-boilerplate-empty-hidetxt',
+        '숨김 텍스트(.hide-txt)의 내용이 비어있습니다.',
+        '스크린 리더가 읽어줄 대체 텍스트 콘텐츠를 입력해 주세요.',
+        el,
+        'Empty hidden text helper (.hide-txt)'
+      );
     }
   });
 

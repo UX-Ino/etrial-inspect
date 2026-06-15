@@ -25,6 +25,16 @@ export const AuditConfigForm = ({ config, setConfig, onStart, onGitHubStart, isP
       </div>
 
       <div className="form-group">
+        <label>제외할 경로 (쉼표로 구분)</label>
+        <input
+          type="text"
+          placeholder="예: /eng, /m"
+          value={config.excludePaths || ''}
+          onChange={(e) => setConfig({ ...config, excludePaths: e.target.value })}
+        />
+      </div>
+
+      <div className="form-group">
         <div className="toggle-container">
           <span
             className={`toggle ${config.enableLogin ? 'active' : ''}`}

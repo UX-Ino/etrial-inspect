@@ -43,10 +43,34 @@ export async function runAudit(config: AuditConfig, onProgress?: (data: any) => 
 
   // 2. Crawler Init
   const isVercel = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  const customExcludePatterns: RegExp[] = [];
+  if (config.excludePaths) {
+    const paths = config.excludePaths
+      .split(',')
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+    for (const p of paths) {
+      const escaped = p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      customExcludePatterns.push(new RegExp(escaped, 'i'));
+    }
+  }
+
   const crawler = new WebCrawler({
     maxDepth: isVercel ? 2 : 10,
     maxPages: isVercel ? 5 : 1000,
-    headless: true
+    headless: true,
+    excludePatterns: [
+      /\.(jpg|jpeg|png|gif|svg|webp|ico|pdf|zip|exe|dmg)$/i,
+      /logout/i,
+      /delete/i,
+      /signout/i,
+      /#$/,
+      /javascript:/i,
+      /mailto:/i,
+      /tel:/i,
+      ...customExcludePatterns
+    ]
   });
 
   const auditor = new AccessibilityAuditor({
@@ -147,7 +171,10 @@ export async function runAudit(config: AuditConfig, onProgress?: (data: any) => 
                 occurrenceCount: 1,
                 isCommon: isCommonUI,
                 boundingBox: node.boundingBox,
-                screenshotPath: auditResult.screenshotPaths?.[0]
+                screenshotPath: auditResult.screenshotPaths?.[0],
+                failureSummary: node.failureSummary,
+                axeHelp: kwcagViolation.axeHelp,
+                axeDescription: kwcagViolation.axeDescription
               };
 
               uniqueViolationMap.set(signature, violation);

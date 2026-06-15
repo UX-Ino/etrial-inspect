@@ -358,10 +358,14 @@ export const KWCAG_MAPPING: KWCAGItem[] = [
       // Custom Rules
       'custom-aria-tab-missing-selected',
       'custom-aria-tab-missing-controls',
+      'custom-aria-tab-invalid-controls',
+      'custom-aria-tab-controls-role-mismatch',
+      'custom-aria-tab-missing-tablist',
       'custom-aria-checkbox-missing-checked',
       'custom-aria-radio-missing-checked',
       'custom-aria-slider-missing-values',
       'custom-aria-button-invalid-pressed',
+      'custom-boilerplate-empty-hidetxt',
     ],
     automationLevel: 'high',
     description: '웹 애플리케이션은 접근성이 있어야 한다.',
@@ -413,6 +417,8 @@ export interface KWCAGViolation {
   }[];
   help: string;
   helpUrl: string;
+  axeHelp?: string;
+  axeDescription?: string;
 }
 
 export function convertAxeToKWCAG(axeResults: {
@@ -434,6 +440,8 @@ export function convertAxeToKWCAG(axeResults: {
         nodes: violation.nodes,
         help: kwcagItem.help || violation.help,
         helpUrl: violation.helpUrl,
+        axeHelp: violation.help,
+        axeDescription: violation.description,
       });
     } else {
       // 매핑되지 않은 axe 규칙도 포함
@@ -447,6 +455,8 @@ export function convertAxeToKWCAG(axeResults: {
         nodes: violation.nodes,
         help: violation.help,
         helpUrl: violation.helpUrl,
+        axeHelp: violation.help,
+        axeDescription: violation.description,
       });
     }
   }

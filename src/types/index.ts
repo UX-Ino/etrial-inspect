@@ -12,6 +12,7 @@ export interface AuditConfig {
   enableAICheck?: boolean;
   platform: 'PC' | 'Mobile';
   inspector: string;
+  excludePaths?: string;
 }
 
 export interface PageInfo {
@@ -73,6 +74,9 @@ export interface Violation {
   isCommon?: boolean; // Flag for common UI/Template violation
   screenshotPath?: string; // Path to the full-page screenshot
   boundingBox?: BoundingBox; // Coordinates of the violation
+  failureSummary?: string; // Detailed reason from accessibility engine
+  axeHelp?: string; // Translated detail help from axe-core
+  axeDescription?: string; // Translated detail description from axe-core
 }
 
 export interface AuditResult {
