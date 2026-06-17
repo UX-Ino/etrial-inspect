@@ -82,12 +82,12 @@
       "help": "표에 caption, th, scope 속성을 올바르게 제공하세요.",
       "helpUrl": "https://www.wah.or.kr",
       "tags": ["kwcag2.2", "kwcag-3", "wcag131", "cat.tables", "kwcag-draft"],
-      "enabled": false,
+      "enabled": true,
       "selector": "table",
       "checks": [
         {
           "id": "kwcag-3-table-caption-check",
-          "evaluate": "function(node,options,virtualNode,context){var role=node.getAttribute('role');if(role==='presentation'||role==='none')return true;var tds=node.querySelectorAll('td');if(tds.length===0)return true;var caption=node.querySelector('caption');var summary=node.getAttribute('summary');var lbl=node.getAttribute('aria-label');var lblby=node.getAttribute('aria-labelledby');if(!caption&&!summary&&!lbl&&!lblby){this.data({message:'데이터 표에 제목(caption/aria-label)이 없습니다.'});return false;}return true;}",
+          "evaluate": "function(node,options,virtualNode,context){var role=node.getAttribute('role');if(role==='presentation'||role==='none')return true;var tds=node.querySelectorAll('td');if(tds.length===0)return true;var caption=node.querySelector('caption');var captionText=caption?caption.textContent.trim():'';var summary=node.getAttribute('summary');var lbl=node.getAttribute('aria-label');var lblby=node.getAttribute('aria-labelledby');if(!captionText&&!summary&&!lbl&&!lblby){this.data({message:'데이터 표에 제목(caption/aria-label)이 없거나 내용이 비어 있습니다.'});return false;}return true;}",
           "impact": "serious",
           "messages": {
             "pass": "표 제목이 제공되었습니다.",
@@ -105,8 +105,8 @@
         }
       ],
       "impact": "serious",
-      "any": ["kwcag-3-table-caption-check", "kwcag-3-table-th-scope-check"],
-      "all": [],
+      "any": [],
+      "all": ["kwcag-3-table-caption-check", "kwcag-3-table-th-scope-check"],
       "none": []
     },
     {
