@@ -21,7 +21,7 @@ async function main() {
   const history = await notionService.getAuditHistory();
 
   console.log('\n--- Notion Audit History ---');
-  history.forEach((h, i) => {
+  history.forEach((h: any, i: number) => {
     console.log(`[${i+1}] ID: ${h.id}`);
     console.log(`    Date: ${h.date}`);
     console.log(`    URL: ${h.url}`);

@@ -11,7 +11,7 @@ async function main() {
 
   try {
     await auditor.init();
-    const result = await auditor.auditPage('http://localhost:8080/kor/business/global.jsp');
+    const result = await auditor.auditPage('http://localhost:8080/kor/company/pr.jsp');
     await auditor.close();
 
     console.log('\n✅ Audit completed!');

@@ -253,6 +253,13 @@ export class AccessibilityAuditor {
 
       const axeResults = await builder
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'kwcag2.2'])
+        .exclude('iframe')
+        .options({
+          rules: {
+            'target-size': { enabled: false },
+            'region': { enabled: false }
+          }
+        })
         .analyze();
 
       // 2. Bounding Box 추출 및 주입
@@ -399,6 +406,12 @@ export class AccessibilityAuditor {
             const axeResults = await new AxeBuilder({ page, axeSource })
               .include('.modal, .layer-popup, .dropdown-menu, [role="dialog"]')
               .withTags(['wcag2a', 'wcag2aa', 'kwcag2.2'])
+              .options({
+                rules: {
+                  'target-size': { enabled: false },
+                  'region': { enabled: false }
+                }
+              })
               .analyze();
 
             additionalViolations.push(...axeResults.violations);
