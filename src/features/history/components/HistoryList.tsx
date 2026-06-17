@@ -72,29 +72,53 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
       <div className={styles.historyList}>
         {history.map(item => (
           <div key={item.id} className={styles.historyItem}>
-            <div className={styles.itemInfo}>
-              <span className={styles.date}>{new Date(item.date).toLocaleDateString()}</span>
-              <span className={styles.url}>{item.url}</span>
-              <span className={styles.score}>SEO {item.score}점</span>
-              <span className={styles.violations}>위반 {item.violationCount}건</span>
-            </div>
-            <div className={styles.itemActions}>
-              {/* Notion 페이지 ID 기반 상세 리포트 */}
-              <a href={`/report/${item.id}`} className={styles.btnLink}>
-                리포트 보기
-              </a>
-              {item.reportLink && (
-                <a href={item.reportLink} target="_blank" rel="noopener noreferrer" className={styles.btnLink}>
-                  Notion
-                </a>
-              )}
+            {/* Top Row: URL & Delete Button */}
+            <div className={styles.topRow}>
+              <span className={styles.url} title={item.url}>{item.url}</span>
               <button
                 onClick={() => handleDelete(item.id)}
                 className={styles.btnDelete}
                 aria-label="리포트 삭제"
+                title="삭제"
               >
-                삭제
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{ display: 'block' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
+            </div>
+
+            {/* Bottom Row */}
+            <div className={styles.bottomRow}>
+              {/* Bottom Left: Date & Badges */}
+              <div className={styles.metaRow}>
+                <span className={styles.date}>{new Date(item.date).toLocaleDateString()}</span>
+                <span className={styles.scoreBadge}>SEO {item.score}점</span>
+                <span className={styles.violationBadge}>위반 {item.violationCount}건</span>
+              </div>
+
+              {/* Bottom Right: Actions */}
+              <div className={styles.itemActions}>
+                {/* Notion 페이지 ID 기반 상세 리포트 */}
+                <a href={`/report/${item.id}`} className={styles.btnLink} aria-label="상세 리포트 보기" title="리포트 보기">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{ display: 'block' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </a>
+                {item.reportLink && (
+                  <a
+                    href={item.reportLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles.btnLink} ${styles.btnNotion}`}
+                    aria-label="Notion 페이지 열기"
+                    title="Notion에서 보기"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style={{ display: 'block' }}>
+                      <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2.5 4v10h2.4v-4.3l3.5 4.3h2.6V7h-2.4v4.3L9.1 7H6.5z" />
+                    </svg>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         ))}

@@ -92,7 +92,7 @@ input:focus, select:focus, textarea:focus {
   background: var(--card-bg);
   border: none;
   border-radius: 24px;
-  padding: 2rem;
+  padding: 2.5rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.2s, transform 0.2s;
 }
