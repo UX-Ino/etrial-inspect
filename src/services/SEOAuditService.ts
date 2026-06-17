@@ -58,7 +58,7 @@ export class SEOAuditService {
    * @param targetUrl 대상 사이트 URL
    * @returns Sitemap 분석 결과
    */
-  async analyzeSitemap(targetUrl: string): Promise<SitemapAnalysisResult> {
+  async analyzeSitemap(targetUrl: string, excludePaths?: string): Promise<SitemapAnalysisResult> {
     const baseUrl = new URL(targetUrl).origin;
     const result: SitemapAnalysisResult = {
       exists: false,
@@ -96,7 +96,29 @@ export class SEOAuditService {
       result.xmlValid = true;
 
       // 4. URL 추출
-      const urls = this.extractUrls(parsed);
+      let urls = this.extractUrls(parsed);
+
+      // excludePaths 필터링
+      if (excludePaths) {
+        const paths = excludePaths
+          .split(',')
+          .map(p => p.trim().replace(/^['"]|['"]$/g, ''))
+          .filter(p => p.length > 0);
+        
+        const excludePatterns: RegExp[] = [];
+        for (const p of paths) {
+          const escaped = p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          excludePatterns.push(new RegExp(escaped, 'i'));
+        }
+
+        urls = urls.filter(url => {
+          for (const pattern of excludePatterns) {
+            if (pattern.test(url)) return false;
+          }
+          return true;
+        });
+      }
+
       result.totalUrls = urls.length;
 
       // 5. 샘플링 (최대 10개)

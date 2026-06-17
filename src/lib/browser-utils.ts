@@ -39,6 +39,13 @@ export const getBrowserLaunchOptions = async (isHeadless: boolean = true): Promi
     }
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    return {
+      channel: 'chrome',
+      headless: isHeadless,
+    };
+  }
+
   // Local Development or GitHub Actions (CI)
   // Try to resolve the executable path from the 'playwright' package if available.
   // This ensures we use the binary installed by `npx playwright install`, which is reliable in CI.

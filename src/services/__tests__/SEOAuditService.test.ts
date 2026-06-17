@@ -56,4 +56,62 @@ describe('SEOAuditService - Phase 1: Static Analysis Migration', () => {
       expect(result).toHaveProperty('analysisSource', 'seo-analyzer');
     });
   });
+
+  describe('analyzeSitemap', () => {
+    let originalFetch: typeof global.fetch;
+
+    beforeAll(() => {
+      originalFetch = global.fetch;
+    });
+
+    afterAll(() => {
+      global.fetch = originalFetch;
+    });
+
+    test('should filter out URLs that match excludePaths', async () => {
+      const mockSitemapXml = `
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url><loc>https://example.com/kor/main</loc></url>
+          <url><loc>https://example.com/eng/business</loc></url>
+          <url><loc>https://example.com/kor/company</loc></url>
+        </urlset>
+      `;
+
+      global.fetch = jest.fn().mockImplementation((url: string) => {
+        if (url.endsWith('/robots.txt')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('Sitemap: https://example.com/sitemap.xml'),
+          });
+        }
+        if (url.endsWith('/sitemap.xml')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve(mockSitemapXml),
+          });
+        }
+        // HEAD request validation
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+        });
+      }) as jest.Mock;
+
+      // 1. Without exclusion: should check 3 URLs
+      const resultNoExclude = await service.analyzeSitemap('https://example.com');
+      expect(resultNoExclude.totalUrls).toBe(3);
+      expect(resultNoExclude.sampledUrls.some(u => u.url.includes('/eng/'))).toBe(true);
+
+      // 2. With '/eng' excluded: should only check 2 URLs, not including '/eng'
+      const resultWithExclude = await service.analyzeSitemap('https://example.com', '/eng');
+      expect(resultWithExclude.totalUrls).toBe(2);
+      expect(resultWithExclude.sampledUrls.some(u => u.url.includes('/eng/'))).toBe(false);
+      expect(resultWithExclude.sampledUrls.map(u => u.url)).toEqual(
+        expect.arrayContaining([
+          'https://example.com/kor/main',
+          'https://example.com/kor/company'
+        ])
+      );
+    });
+  });
 });

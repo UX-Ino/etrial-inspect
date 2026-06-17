@@ -30,7 +30,8 @@ describe('NotionService', () => {
     mockNotionClient = {
       pages: { create: jest.fn().mockResolvedValue({ id: 'page-id' }), update: jest.fn() },
       blocks: { children: { list: jest.fn(), append: jest.fn().mockResolvedValue({}) } },
-      databases: { query: jest.fn() }
+      databases: { query: jest.fn() },
+      request: jest.fn()
     };
     (Client as unknown as jest.Mock).mockImplementation(() => mockNotionClient);
     notionService = new NotionService('fake-key', 'fake-db');
@@ -196,7 +197,7 @@ describe('NotionService', () => {
 
   describe('getAuditHistory', () => {
     it('should query database with Deleted=false filter and sort by Date', async () => {
-      mockNotionClient.databases.query.mockResolvedValue({
+      mockNotionClient.request.mockResolvedValue({
         results: [
           {
             id: 'page-1',
@@ -213,20 +214,23 @@ describe('NotionService', () => {
 
       const history = await notionService.getAuditHistory();
 
-      expect(mockNotionClient.databases.query).toHaveBeenCalledWith({
-        database_id: 'fake-db',
-        filter: {
-          property: 'Deleted',
-          checkbox: {
-            equals: false,
+      expect(mockNotionClient.request).toHaveBeenCalledWith({
+        path: 'databases/fake-db/query',
+        method: 'post',
+        body: {
+          filter: {
+            property: 'Deleted',
+            checkbox: {
+              equals: false,
+            },
           },
+          sorts: [
+            {
+              property: 'Date',
+              direction: 'descending',
+            },
+          ],
         },
-        sorts: [
-          {
-            property: 'Date',
-            direction: 'descending',
-          },
-        ],
       });
 
       expect(history).toHaveLength(1);

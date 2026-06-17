@@ -145,14 +145,25 @@ export class AccessibilityAuditor {
         console.error(`Failed to capture screenshot for ${url}:`, e);
       }
 
-      // 기본 접근성 스캔
-      const axePath = isDev
-        ? path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.min.js')
-        : path.join(__dirname, '../../../node_modules/axe-core/axe.min.js');
+      // 기본 접근성 스캔 파일 경로 찾기 (여러 경로 순차 검색)
+      let axePath = path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.min.js');
+      if (!fs.existsSync(axePath)) {
+        axePath = path.join(__dirname, '../../../node_modules/axe-core/axe.min.js');
+      }
+      if (!fs.existsSync(axePath)) {
+        axePath = path.join(__dirname, '../../node_modules/axe-core/axe.min.js');
+      }
+      if (!fs.existsSync(axePath)) {
+        axePath = path.join(__dirname, '../node_modules/axe-core/axe.min.js');
+      }
 
       let axeCoreSource = '';
       try {
-        axeCoreSource = fs.readFileSync(axePath, 'utf8');
+        if (fs.existsSync(axePath)) {
+          axeCoreSource = fs.readFileSync(axePath, 'utf8');
+        } else {
+          console.error('[Auditor] Could not locate axe.min.js in any of the search paths.');
+        }
       } catch (e) {
         console.error('Failed to read axe.min.js from:', axePath, e);
       }

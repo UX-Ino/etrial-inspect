@@ -19,7 +19,7 @@
       "checks": [
         {
           "id": "kwcag-1-img-alt-check",
-          "evaluate": "function(node, options, virtualNode, context) { const alt = node.getAttribute('alt'); const ariaLabel = node.getAttribute('aria-label'); const ariaLabelledby = node.getAttribute('aria-labelledby'); if (node.tagName === 'IMG') { if (alt === null) { this.data({ message: 'alt 속성이 없습니다.' }); return false; } if (alt.trim() === '' && !ariaLabel && !ariaLabelledby) { if (node.closest('a, button')) { this.data({ message: '링크/버튼 내 이미지에 대체 텍스트가 없습니다.' }); return false; } return true; } } if (!alt && !ariaLabel && !ariaLabelledby) { this.data({ message: '대체 텍스트가 없습니다.' }); return false; } return true; }",
+          "evaluate": "function(node, options, virtualNode, context) { const alt = node.getAttribute('alt'); const ariaLabel = node.getAttribute('aria-label'); const ariaLabelledby = node.getAttribute('aria-labelledby'); if (node.tagName === 'IMG') { if (alt === null) { this.data({ message: 'alt 속성이 없습니다.' }); return false; } if (alt.trim() === '' && !ariaLabel && !ariaLabelledby) { const parent = node.closest('a, button'); if (parent) { const pAriaLabel = parent.getAttribute('aria-label'); const pAriaLabelledby = parent.getAttribute('aria-labelledby'); const pTitle = parent.getAttribute('title'); const pText = parent.textContent.trim(); if (!pAriaLabel && !pAriaLabelledby && !pTitle && !pText) { this.data({ message: '링크/버튼 내 이미지에 대체 텍스트가 없고, 부모 링크/버튼에도 접근 가능한 텍스트가 없습니다.' }); return false; } } return true; } } if (!alt && !ariaLabel && !ariaLabelledby) { this.data({ message: '대체 텍스트가 없습니다.' }); return false; } return true; }",
           "impact": "critical",
           "messages": {
             "pass": "대체 텍스트가 적절히 제공되었습니다.",
@@ -351,7 +351,7 @@
       "description": "터치 기반 환경에서 모든 인터랙티브 요소의 크기는 최소 44×44 CSS 픽셀 이상이어야 합니다.",
       "help": "터치 대상 크기를 최소 44×44px 이상으로 제공하세요.",
       "helpUrl": "https://www.wah.or.kr",
-      "tags": ["kwcag2.2", "kwcag-12", "wcag255", "cat.pointer", "kwcag-draft"],
+      "tags": ["kwcag-12", "wcag255", "cat.pointer", "kwcag-draft"],
       "enabled": false,
       "selector": "button, a, input[type='checkbox'], input[type='radio'], [role='button'], [role='tab']",
       "checks": [
@@ -541,7 +541,7 @@
       "checks": [
         {
           "id": "kwcag-19-link-text-check",
-          "evaluate": "function(node, options, virtualNode, context) { const vague = ['여기', '클릭', '바로가기', '더보기', '보기', '링크', 'click here', 'here', 'more', 'read more']; const ariaLabel = node.getAttribute('aria-label') || ''; const title = node.getAttribute('title') || ''; const text = (node.textContent || '').trim(); const accessible = (ariaLabel || title || text).trim(); if (!accessible) { this.data({ message: '링크 텍스트가 없습니다.' }); return false; } if (vague.some(function(v) { return accessible.toLowerCase() === v; })) { this.data({ message: '링크 텍스트가 불명확합니다: \"' + accessible + '\"' }); return false; } return true; }",
+          "evaluate": "function(node, options, virtualNode, context) { const vague = ['여기', '클릭', '바로가기', '더보기', '보기', '링크', 'click here', 'here', 'more', 'read more']; const ariaLabel = node.getAttribute('aria-label') || ''; const title = node.getAttribute('title') || ''; const imgs = Array.from(node.querySelectorAll('img')); const imgAlts = imgs.map(function(img) { return (img.getAttribute('alt') || '').trim(); }).filter(Boolean).join(' '); const text = (node.textContent || '').trim() || imgAlts; const accessible = (ariaLabel || title || text).trim(); if (!accessible) { this.data({ message: '링크 텍스트가 없습니다.' }); return false; } if (vague.some(function(v) { return accessible.toLowerCase() === v; })) { this.data({ message: '링크 텍스트가 불명확합니다: \"' + accessible + '\"' }); return false; } return true; }",
           "impact": "serious",
           "messages": {
             "pass": "링크 텍스트가 적절합니다.",

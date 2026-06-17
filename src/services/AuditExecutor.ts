@@ -48,7 +48,7 @@ export async function runAudit(config: AuditConfig, onProgress?: (data: any) => 
   if (config.excludePaths) {
     const paths = config.excludePaths
       .split(',')
-      .map(p => p.trim())
+      .map(p => p.trim().replace(/^['"]|['"]$/g, ''))
       .filter(p => p.length > 0);
     for (const p of paths) {
       const escaped = p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -221,7 +221,7 @@ export async function runAudit(config: AuditConfig, onProgress?: (data: any) => 
       try {
         // Sitemap 분석
         log('  [SEO] Sitemap.xml 분석 중...');
-        const sitemap = await seoAuditService.analyzeSitemap(config.targetUrl);
+        const sitemap = await seoAuditService.analyzeSitemap(config.targetUrl, config.excludePaths);
 
         // Metadata 분석
         log('  [SEO] 메타데이터 및 콘텐츠 분석 중...');
