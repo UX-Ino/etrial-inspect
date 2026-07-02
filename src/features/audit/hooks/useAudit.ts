@@ -67,7 +67,11 @@ export function useAudit(onHistoryRefresh?: () => void) {
       return;
     }
 
+    let pollCount = 0;
+    const startTime = Date.now();
+
     const pollStatus = async () => {
+      pollCount++;
       try {
         const res = await fetch(`/api/github/status?runId=${githubRunId}`);
         const data = await res.json();
@@ -83,7 +87,25 @@ export function useAudit(onHistoryRefresh?: () => void) {
           completed: '✅ 완료됨',
         };
 
-        addLog(`[GitHub] 상태: ${statusMap[data.status] || data.status}`);
+        // 경과 시간 계산
+        const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
+        const elapsedMin = Math.floor(elapsedSec / 60);
+        const elapsedDisplay = elapsedMin > 0
+          ? `${elapsedMin}분 ${elapsedSec % 60}초 경과`
+          : `${elapsedSec}초 경과`;
+
+        // 현재 실행 중인 step/job 정보 표시
+        let statusMessage = `[GitHub] 상태: ${statusMap[data.status] || data.status} (${elapsedDisplay})`;
+        if (data.status === 'in_progress') {
+          if (data.currentStep) {
+            statusMessage = `[GitHub] 🔄 ${data.currentStep} (${elapsedDisplay})`;
+          } else if (data.jobStatus) {
+            statusMessage = `[GitHub] 🔄 실행 중: ${data.jobStatus} (${elapsedDisplay})`;
+          } else {
+            statusMessage = `[GitHub] 🔄 접근성 검사 진행 중... (${elapsedDisplay})`;
+          }
+        }
+        addLog(statusMessage);
 
         if (data.status === 'completed') {
           setIsPollingGitHub(false);
@@ -101,14 +123,32 @@ export function useAudit(onHistoryRefresh?: () => void) {
                 addLog(`[GitHub] 히스토리 목록 갱신 중...`);
                 onHistoryRefresh();
               }
-              // 최신 리포트 ID 가져오기
+              // 최신 리포트 ID 및 결과 요약 가져오기
               try {
                 const historyRes = await fetch('/api/history/list', { cache: 'no-store' });
                 if (historyRes.ok) {
                   const historyData = await historyRes.json();
                   if (historyData.length > 0) {
-                    setLatestReportId(historyData[0].id);
-                    addLog(`[GitHub] 최신 리포트 ID 확인 완료: ${historyData[0].id}`);
+                    const latest = historyData[0];
+                    setLatestReportId(latest.id);
+                    addLog(`[GitHub] 최신 리포트 ID 확인 완료: ${latest.id}`);
+
+                    // 페이지 수 / 위반 건수 업데이트 (Notion 응답 필드명: violationCount, pageCount)
+                    const violations = latest.violationCount ?? latest.totalViolations ?? latest.violations ?? 0;
+                    const pages = latest.pageCount ?? latest.totalPages ?? latest.pages ?? 0;
+
+                    setResults({ pages, violations });
+                    setProgress(prev => ({
+                      ...prev,
+                      totalFound: pages,
+                      violations,
+                    }));
+
+                    if (violations > 0 || pages > 0) {
+                      addLog(`[GitHub] 분석 완료: ${pages > 0 ? `${pages}개 페이지, ` : ''}위반 건수 ${violations}건`);
+                    } else {
+                      addLog(`[GitHub] 결과 집계 완료. 상세 리포트를 확인해주세요.`);
+                    }
                   }
                 }
               } catch (err) {

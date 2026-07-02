@@ -359,12 +359,40 @@ export class AccessibilityAuditor {
   private async checkDynamicElements(page: Page): Promise<typeof AxeBuilder.prototype.analyze extends () => Promise<infer R> ? R extends { violations: infer V } ? V : never : never> {
     const additionalViolations: ReturnType<typeof this.checkDynamicElements> extends Promise<infer R> ? R : never = [];
 
+    // 다양한 사이트의 팝업/모달 셀렉터를 포괄적으로 정의
+    const POPUP_SELECTORS = [
+      // ARIA 표준
+      '[role="dialog"]',
+      '[role="alertdialog"]',
+      // 일반적인 모달/팝업 클래스
+      '.modal',
+      '.modal-wrap',
+      '.modal-container',
+      '.layer-popup',
+      '.layer-wrap',
+      '.popup',
+      '.popup-wrap',
+      '.pop-wrap',
+      '.pop_wrap',
+      '.popupWrap',
+      '.layerWrap',
+      '.layerpop',
+      '.layer_pop',
+      // 드롭다운/오버레이
+      '.dropdown-menu',
+      '.overlay',
+      '.dialog',
+      '.dialog-wrap',
+    ].join(', ');
+
     try {
-      // 클릭 가능한 요소 찾기
-      const clickableElements = await page.$$('button, [role="button"], .btn, .dropdown-toggle');
+      // 클릭 가능한 요소 찾기 (범위 확장)
+      const clickableElements = await page.$$(
+        'button, [role="button"], .btn, .dropdown-toggle, a[href="#"], a[href="javascript:void(0)"]'
+      );
       const originalUrl = page.url();
 
-      for (let i = 0; i < Math.min(clickableElements.length, 10); i++) {
+      for (let i = 0; i < Math.min(clickableElements.length, 20); i++) {
         const element = clickableElements[i];
 
         try {
@@ -376,17 +404,37 @@ export class AccessibilityAuditor {
           if (/로그아웃|logout|삭제|delete|탈퇴/i.test(text)) continue;
 
           await element.click({ timeout: 2000 });
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(800);
 
           // URL 이탈 체크
           if (page.url() !== originalUrl) {
             await page.goBack();
+            await page.waitForTimeout(500);
             continue;
           }
 
-          // 새로 열린 모달/팝업 검사
-          const modal = await page.$('.modal, .layer-popup, .dropdown-menu, [role="dialog"]');
-          if (modal) {
+          // 새로 열린 팝업 검사: DOM에 있는 것이 아니라 실제로 보이는(visible) 상태인지 확인
+          const visiblePopup = await page.evaluateHandle((selectors) => {
+            const candidates = document.querySelectorAll(selectors);
+            for (const el of Array.from(candidates)) {
+              const style = window.getComputedStyle(el);
+              const rect = el.getBoundingClientRect();
+              if (
+                style.display !== 'none' &&
+                style.visibility !== 'hidden' &&
+                style.opacity !== '0' &&
+                rect.width > 0 &&
+                rect.height > 0
+              ) {
+                return el;
+              }
+            }
+            return null;
+          }, POPUP_SELECTORS);
+
+          const popupElement = visiblePopup.asElement();
+
+          if (popupElement) {
             // 메인 auditPage에서 생성한 axeSource가 있으면 재사용, 없으면 그냥 생성
             const axePath = isDev
               ? path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.min.js')
@@ -403,9 +451,10 @@ export class AccessibilityAuditor {
               ? `${axeCoreSource}\n window.axe.configure({ locale: ${JSON.stringify(koLocale)} });`
               : undefined;
 
+            // 팝업이 실제로 보이는 상태에서 검사
             const axeResults = await new AxeBuilder({ page, axeSource })
-              .include('.modal, .layer-popup, .dropdown-menu, [role="dialog"]')
-              .withTags(['wcag2a', 'wcag2aa', 'kwcag2.2'])
+              .include(POPUP_SELECTORS)
+              .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'kwcag2.2'])
               .options({
                 rules: {
                   'target-size': { enabled: false },
@@ -414,10 +463,13 @@ export class AccessibilityAuditor {
               })
               .analyze();
 
+            if (axeResults.violations.length > 0) {
+              console.log(`[Dynamic] Found ${axeResults.violations.length} violation(s) in popup/modal`);
+            }
             additionalViolations.push(...axeResults.violations);
           }
 
-          // ESC로 닫기
+          // ESC로 닫기 시도
           await page.keyboard.press('Escape');
           await page.waitForTimeout(300);
         } catch {

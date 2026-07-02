@@ -23,9 +23,36 @@ async function main() {
 
   console.log('Starting Audit for:', targetUrl);
 
+  // GitHub Actions Job Summary에 시작 정보 기록
+  const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+  const writeSummary = (content: string) => {
+    if (summaryFile) {
+      try {
+        fs.appendFileSync(summaryFile, content + '\n');
+      } catch (e) {
+        // 무시
+      }
+    }
+  };
+
+  writeSummary(`## 🔍 접근성 전수 검사 시작\n`);
+  writeSummary(`- 대상: ${targetUrl}`);
+  writeSummary(`- 시작 시각: ${new Date().toLocaleString('ko-KR')}\n`);
+  writeSummary(`| 순서 | URL | 오류 수 | 상태 |`);
+  writeSummary(`|------|-----|--------|------|`);
+
+  let pageIndex = 0;
+
   try {
     const result = await runAudit(config, (progress) => {
-      console.log(`[Progress] ${progress.type}: ${progress.message || ''}`, progress);
+      if (progress.type === 'progress' && progress.url) {
+        pageIndex++;
+        const status = '🔄 검사 중';
+        writeSummary(`| ${pageIndex} | ${progress.url} | - | ${status} |`);
+        console.log(`[${pageIndex}/${progress.total || '?'}] 검사 중: ${progress.url}`);
+      } else {
+        console.log(`[Progress] ${progress.type}: ${progress.message || ''}`, progress);
+      }
     });
 
     console.log('Audit Completed successfully.');

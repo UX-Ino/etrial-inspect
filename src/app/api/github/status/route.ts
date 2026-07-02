@@ -40,6 +40,39 @@ export async function GET(request: NextRequest) {
 
       const run = await response.json();
 
+      // Jobs 정보 가져오기 (현재 실행 중인 step 파악)
+      let currentStep: string | null = null;
+      let jobStatus: string | null = null;
+      try {
+        const jobsResponse = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/actions/runs/${runId}/jobs`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github.v3+json',
+            },
+          }
+        );
+        if (jobsResponse.ok) {
+          const jobsData = await jobsResponse.json();
+          const jobs = jobsData.jobs || [];
+          // 진행 중인 job 찾기
+          const inProgressJob = jobs.find((j: any) => j.status === 'in_progress') || jobs[0];
+          if (inProgressJob) {
+            jobStatus = inProgressJob.name;
+            // 진행 중인 step 찾기
+            const inProgressStep = (inProgressJob.steps || []).find(
+              (s: any) => s.status === 'in_progress'
+            );
+            if (inProgressStep) {
+              currentStep = inProgressStep.name;
+            }
+          }
+        }
+      } catch (e) {
+        // Jobs 정보 가져오기 실패해도 기본 정보는 반환
+      }
+
       return NextResponse.json({
         runId: run.id,
         status: run.status, // queued, in_progress, completed
@@ -48,6 +81,8 @@ export async function GET(request: NextRequest) {
         updatedAt: run.updated_at,
         htmlUrl: run.html_url,
         logsUrl: `${run.html_url}/logs`,
+        currentStep,   // 현재 실행 중인 step 이름
+        jobStatus,     // 현재 실행 중인 job 이름
       });
     }
 

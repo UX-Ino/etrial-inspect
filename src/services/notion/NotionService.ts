@@ -218,6 +218,9 @@ export class NotionService {
           'Violations': {
             number: result.totalViolations,
           },
+          'Pages': {
+            number: result.pages.length,
+          },
           'Status': {
             status: { name: '완료' },
           },
@@ -341,6 +344,7 @@ export class NotionService {
           date: props['Date']?.date?.start || '',
           score: props['Score (Total)']?.number || 0,
           violationCount: props['Violations']?.number || 0,
+          pageCount: props['Pages']?.number || 0,
           reportLink: props['Report Link']?.url || null,
           artifactName: props['Artifact Name']?.rich_text?.[0]?.plain_text || null,
           screenshotUrl: props['Screenshot URL']?.url || null,
